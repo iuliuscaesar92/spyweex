@@ -17,10 +17,8 @@
 namespace http {
 namespace server {
 
-connection::connection(boost::asio::ip::tcp::socket socket,
-    connection_manager& manager, request_handler& handler)
+connection::connection(boost::asio::ip::tcp::socket socket, request_handler& handler)
   : socket_(std::move(socket)),
-    connection_manager_(manager),
     request_handler_(handler)
 {
 }
@@ -64,7 +62,7 @@ void connection::do_read()
         }
         else if (ec != boost::asio::error::operation_aborted)
         {
-          connection_manager_.stop(shared_from_this());
+			this->stop();
         }
       });
 }
@@ -85,7 +83,7 @@ void connection::do_write()
 
         if (ec != boost::asio::error::operation_aborted)
         {
-          connection_manager_.stop(shared_from_this());
+          this->stop();
         }
       });
 }

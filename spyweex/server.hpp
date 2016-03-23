@@ -36,8 +36,6 @@ public:
   void run();
 
 private:
-  /// Perform an asynchronous accept operation.
-  void do_accept();
 
   /// Wait for a request to stop the server.
   void do_await_stop();
@@ -50,12 +48,6 @@ private:
 
   /// The signal_set is used to register for process termination notifications.
   boost::asio::signal_set signals_;
-
-  /// Acceptor used to listen for incoming connections.
-  boost::asio::ip::tcp::acceptor acceptor_;
-
-  /// The connection manager which owns all live connections.
-  connection_manager connection_manager_;
 
   /// The next socket to be accepted.
   boost::asio::ip::tcp::socket socket_;

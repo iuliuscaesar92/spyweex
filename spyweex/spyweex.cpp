@@ -44,17 +44,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	try
 	{
-		// Check command line arguments.
-		//if (argc != 4)
-		//{
-		//  std::cerr << "Usage: http_server <address> <port> <doc_root>\n";
-		//  std::cerr << "  For IPv4, try:\n";
-		//  std::cerr << "    receiver 0.0.0.0 80 .\n";
-		//  std::cerr << "  For IPv6, try:\n";
-		//  std::cerr << "    receiver 0::0 80 .\n";
-		//  return 1;
-		//}
-
 		// Initialise the server.
 		std::string doc = "G:\\simple_orange\\www";
 		std::string ip = "192.168.1.7";
