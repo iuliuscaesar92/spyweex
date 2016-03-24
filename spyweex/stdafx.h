@@ -28,6 +28,13 @@
 #include "server.hpp"
 #include "header.hpp"
 
+// for desktop screenshot
+#include <iostream>
+#include <string>
+#include <gdiplus.h>
+// end
+
+
 //comments
 
 // TODO: reference additional headers your program requires here

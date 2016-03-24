@@ -15,13 +15,14 @@ namespace http {
 namespace server {
 
 request_parser::request_parser()
-  : state_(method_start)
+  : state_(method_start), content_iterator(0)
 {
 }
 
 void request_parser::reset()
 {
   state_ = method_start;
+  content_iterator = 0;
 }
 
 request_parser::result_type request_parser::consume(request& req, char input)
@@ -57,7 +58,7 @@ request_parser::result_type request_parser::consume(request& req, char input)
   case uri:
     if (input == ' ')
     {
-      state_ = http_version_h;
+      state_ = http_version_w;
       return indeterminate;
     }
     else if (is_ctl(input))
@@ -66,30 +67,40 @@ request_parser::result_type request_parser::consume(request& req, char input)
     }
     else
     {
-      req.uri.push_back(input);
+      req.action_type.push_back(input);
       return indeterminate;
     }
+  case http_version_w:
+    if (input == 'W')
+    {
+      state_ = http_version_x;
+      return indeterminate;
+    }
+    else
+    {
+      return bad;
+    }
+  case http_version_x:
+	if (input == 'X')
+	{
+		state_ = http_version_h;
+		return indeterminate;
+	}
+	else
+	{
+		return bad;
+	}
   case http_version_h:
-    if (input == 'H')
-    {
-      state_ = http_version_t_1;
-      return indeterminate;
-    }
-    else
-    {
-      return bad;
-    }
-  case http_version_t_1:
-    if (input == 'T')
-    {
-      state_ = http_version_t_2;
-      return indeterminate;
-    }
-    else
-    {
-      return bad;
-    }
-  case http_version_t_2:
+	if (input == 'H')
+	{
+		state_ = http_version_t;
+		return indeterminate;
+	}
+	else
+	{
+		return bad;
+	}
+  case http_version_t:
     if (input == 'T')
     {
       state_ = http_version_p;
@@ -112,8 +123,8 @@ request_parser::result_type request_parser::consume(request& req, char input)
   case http_version_slash:
     if (input == '/')
     {
-      req.http_version_major = 0;
-      req.http_version_minor = 0;
+      req.wxhtp_version_major = 0;
+      req.wxhtp_version_minor = 0;
       state_ = http_version_major_start;
       return indeterminate;
     }
@@ -124,7 +135,7 @@ request_parser::result_type request_parser::consume(request& req, char input)
   case http_version_major_start:
     if (is_digit(input))
     {
-      req.http_version_major = req.http_version_major * 10 + input - '0';
+      req.wxhtp_version_major = req.wxhtp_version_major * 10 + input - '0';
       state_ = http_version_major;
       return indeterminate;
     }
@@ -140,7 +151,7 @@ request_parser::result_type request_parser::consume(request& req, char input)
     }
     else if (is_digit(input))
     {
-      req.http_version_major = req.http_version_major * 10 + input - '0';
+      req.wxhtp_version_major = req.wxhtp_version_major * 10 + input - '0';
       return indeterminate;
     }
     else
@@ -150,7 +161,7 @@ request_parser::result_type request_parser::consume(request& req, char input)
   case http_version_minor_start:
     if (is_digit(input))
     {
-      req.http_version_minor = req.http_version_minor * 10 + input - '0';
+      req.wxhtp_version_minor = req.wxhtp_version_minor * 10 + input - '0';
       state_ = http_version_minor;
       return indeterminate;
     }
@@ -166,7 +177,7 @@ request_parser::result_type request_parser::consume(request& req, char input)
     }
     else if (is_digit(input))
     {
-      req.http_version_minor = req.http_version_minor * 10 + input - '0';
+      req.wxhtp_version_minor = req.wxhtp_version_minor * 10 + input - '0';
       return indeterminate;
     }
     else
@@ -187,6 +198,10 @@ request_parser::result_type request_parser::consume(request& req, char input)
     if (input == '\r')
     {
       state_ = expecting_newline_3;
+	  std::for_each(req.headers.begin(), req.headers.end(), [&req](header &n)
+	  {
+		  req.dictionary_headers.insert(std::pair<std::string, std::string>(n.name, n.value));
+	  });
       return indeterminate;
     }
     else if (!req.headers.empty() && (input == ' ' || input == '\t'))
@@ -276,7 +291,31 @@ request_parser::result_type request_parser::consume(request& req, char input)
       return bad;
     }
   case expecting_newline_3:
-    return (input == '\n') ? good : bad;
+	if( input == '\n')
+	{
+		if (atoi(req.dictionary_headers["Content-Length"].c_str()) != 0)
+		{
+			state_ = content;
+			return indeterminate;
+		}
+		return good;		
+	}
+	else
+	{
+		return bad;
+	}
+
+  case content:
+	if (content_iterator == atoi(req.dictionary_headers["Content-Length"].c_str()))
+	{
+		return good;
+	}
+	else
+	{
+		content_iterator++;
+		req.content.push_back(input);
+		return indeterminate;
+	}
   default:
     return bad;
   }

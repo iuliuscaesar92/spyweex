@@ -22,10 +22,12 @@ namespace server {
 struct request
 {
   std::string method;
-  std::string uri;
-  int http_version_major;
-  int http_version_minor;
+  std::string action_type;
+  int wxhtp_version_major;
+  int wxhtp_version_minor;
   std::vector<header> headers;
+  std::map<std::string, std::string> dictionary_headers;
+  std::string content;
 };
 
 } // namespace server

@@ -155,6 +155,7 @@
     <ClInclude Include="request_handler.hpp" />
     <ClInclude Include="request_parser.hpp" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ScreenshootTaker.h" />
     <ClInclude Include="server.hpp" />
     <ClInclude Include="spyweex.h" />
     <ClInclude Include="stdafx.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="reply.cpp" />
     <ClCompile Include="request_handler.cpp" />
     <ClCompile Include="request_parser.cpp" />
+    <ClCompile Include="ScreenshootTaker.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="spyweex.cpp" />
     <ClCompile Include="stdafx.cpp">
