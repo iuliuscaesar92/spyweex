@@ -17,6 +17,17 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include <iostream>
+#include <string>
+#include <Unknwn.h>    
+#include <gdiplus.h>
+
+#include <time.h>
+
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_handler.hpp"
@@ -28,10 +39,10 @@
 #include "server.hpp"
 #include "header.hpp"
 
+#include "ScreenshootTaker.h"
+
 // for desktop screenshot
-#include <iostream>
-#include <string>
-#include <gdiplus.h>
+
 // end
 
 

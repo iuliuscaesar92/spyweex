@@ -306,13 +306,13 @@ request_parser::result_type request_parser::consume(request& req, char input)
 	}
 
   case content:
-	if (content_iterator == atoi(req.dictionary_headers["Content-Length"].c_str()))
+	if (content_iterator == atoi(req.dictionary_headers["Content-Length"].c_str() - 1))
 	{
 		return good;
 	}
 	else
 	{
-		content_iterator++;
+		++content_iterator;
 		req.content.push_back(input);
 		return indeterminate;
 	}

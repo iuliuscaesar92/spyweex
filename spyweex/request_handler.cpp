@@ -9,12 +9,12 @@
 //
 #include "stdafx.h"
 //#include "request_handler.hpp"
-#include <fstream>
-#include <sstream>
-#include <string>
+
+#include "ScreenshootTaker.h"
 //#include "mime_types.hpp"
 //#include "reply.hpp"
 //#include "request.hpp"
+
 
 namespace http {
 namespace server {
@@ -27,27 +27,36 @@ request_handler::request_handler(const std::string& doc_root)
 void request_handler::handle_request(const request& req, reply& rep)
 {
   
-  std::string extension = "image/jpeg";
+  std::string extension = "jpg";
+  int code; std::vector<char> buffer;
+
+  std::tie(code, buffer) = ScreenshootTaker::TakeScreenshoot(100);
 
   // Open the file to send back.
-  std::string full_path = doc_root_ + request_path;
-  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-  if (!is)
+  if (buffer.empty())
   {
-    rep = reply::stock_reply(reply::not_found);
+    rep = reply::stock_reply(reply::internal_server_error);
     return;
   }
-
   // Fill out the reply to be sent to the client.
+  
   rep.status = reply::ok;
-  char buf[512];
-  while (is.read(buf, sizeof(buf)).gcount() > 0)
-    rep.content.append(buf, is.gcount());
-  rep.headers.resize(2);
+  
+  std::string s(buffer.data(), buffer.size());
+  rep.content.append(s);
+
+  //char buf[512];
+  //while (is.read(buf, sizeof(buf)).gcount() > 0)
+  //  rep.content.append(buf, is.gcount());
+  
+  rep.headers.resize(3);
   rep.headers[0].name = "Content-Length";
   rep.headers[0].value = std::to_string(rep.content.size());
   rep.headers[1].name = "Content-Type";
   rep.headers[1].value = mime_types::extension_to_type(extension);
+  rep.headers[2].name = "Tag";
+  rep.headers[2].value = std::string(req.dictionary_headers.at("Tag"));
+
 }
 
 bool request_handler::url_decode(const std::string& in, std::string& out)

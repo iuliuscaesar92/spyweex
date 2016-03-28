@@ -54,6 +54,8 @@ private:
 
   /// The handler for all incoming requests.
   request_handler request_handler_;
+
+  connection_ptr c; // cool.
 };
 
 } // namespace server

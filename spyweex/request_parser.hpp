@@ -91,7 +91,7 @@ private:
 	  content
   } state_;
 
-  int content_iterator = 0;
+  volatile int content_iterator = 0;
 };
 
 } // namespace server

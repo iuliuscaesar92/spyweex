@@ -60,7 +60,7 @@ void server::handle_reverse_connection(const boost::system::error_code& err)
 
 	if (!err)
 	{
-		connection_ptr c = std::make_shared<connection>(std::move(socket_), request_handler_);
+		c = std::make_shared<connection>(std::move(socket_), request_handler_);
 		c->start();
 	}
 	else

@@ -25,6 +25,10 @@ connection::connection(boost::asio::ip::tcp::socket socket, request_handler& han
 
 void connection::start()
 {
+  //boost::asio::ip::tcp::socket::keep_alive kl(true);
+  //boost::asio::ip::tcp::socket::enable_connection_aborted eca(true);
+  //socket_.set_option(eca);
+  //socket_.set_option(kl);
   do_read();
 }
 
@@ -62,6 +66,7 @@ void connection::do_read()
         }
         else if (ec != boost::asio::error::operation_aborted)
         {
+			std::cout << "Error: " << ec.message() << "\n";
 			this->stop();
         }
       });
@@ -70,22 +75,44 @@ void connection::do_read()
 void connection::do_write()
 {
   auto self(shared_from_this());
-  boost::asio::async_write(socket_, reply_.to_buffers(),
-      [this, self](boost::system::error_code ec, std::size_t)
-      {
-        if (!ec)
-        {
-          // Initiate graceful connection closure.
-          boost::system::error_code ignored_ec;
-          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
-            ignored_ec);
-        }
 
-        if (ec != boost::asio::error::operation_aborted)
-        {
-          this->stop();
-        }
-      });
+  socket_.async_send(reply_.to_buffers(),
+	  [this, self](boost::system::error_code ec, std::size_t)
+  {
+	  if (!ec)
+	  {
+		  boost::system::error_code ignored_ec;
+
+		  // Initiate graceful connection closure. Don't need it here.
+		  socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
+		    ignored_ec);
+	  }
+	  if (ec != boost::asio::error::operation_aborted)
+	  {
+	    this->stop();
+	  }
+  });
+
+
+  //boost::asio::async_write(socket_, reply_.to_buffers(),
+  //    [this, self](boost::system::error_code ec, std::size_t)
+  //    {
+		////do_read();
+  //      if (!ec)
+  //      {
+
+
+  //        //boost::system::error_code ignored_ec;
+
+		//  // Initiate graceful connection closure. Don't need it here.
+  //        //socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
+  //        //  ignored_ec);
+  //      }
+  //      //if (ec != boost::asio::error::operation_aborted)
+  //      //{
+  //      //  this->stop();
+  //      //}
+  //    });
 }
 
 } // namespace server
