@@ -64,33 +64,35 @@ void connection::do_read()
             do_read();
           }
         }
-        else if (ec != boost::asio::error::operation_aborted)
-        {
-			std::cout << "Error: " << ec.message() << "\n";
-			this->stop();
-        }
+   //     else if (ec != boost::asio::error::operation_aborted)
+   //     {
+			//std::cout << "Error: " << ec.message() << "\n";
+			//this->stop();
+   //     }
       });
 }
-
+#pragma optimize( "", off )
 void connection::do_write()
 {
   auto self(shared_from_this());
 
-  socket_.async_send(reply_.to_buffers(),
-	  [this, self](boost::system::error_code ec, std::size_t)
+  boost::asio::async_write(socket_, reply_.to_buffers(),
+  [this, self](boost::system::error_code ec, std::size_t)
   {
 	  if (!ec)
 	  {
-		  boost::system::error_code ignored_ec;
+		  
+		  //boost::system::error_code ignored_ec;
 
-		  // Initiate graceful connection closure. Don't need it here.
-		  socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
-		    ignored_ec);
+		  //// Initiate graceful connection closure. Don't need it here.
+		  //socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
+		  //  ignored_ec);
 	  }
-	  if (ec != boost::asio::error::operation_aborted)
-	  {
-	    this->stop();
-	  }
+	  //if (ec != boost::asio::error::operation_aborted)
+	  //{
+	  //  this->stop();
+	  //}
+
   });
 
 
@@ -114,6 +116,6 @@ void connection::do_write()
   //      //}
   //    });
 }
-
+#pragma optimize("", on)
 } // namespace server
 } // namespace http
