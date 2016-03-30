@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <boost/asio.hpp>
+#include <boost/thread.hpp>
 
 #define MAX_LOADSTRING 100
 
@@ -50,6 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		std::string port = "61234";
 		http::server::server s(ip, port, doc);
 		// Run the server until stopped.
+		boost::this_thread::sleep(boost::posix_time::millisec(100));
 		s.run();
 	}
 	catch (std::exception& e)

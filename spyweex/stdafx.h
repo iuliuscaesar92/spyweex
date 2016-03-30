@@ -40,7 +40,7 @@
 #include "header.hpp"
 
 #include "ScreenshootTaker.h"
-
+#define	BOOST_ASIO_ENABLE_HANDLER_TRACKING
 // for desktop screenshot
 
 // end

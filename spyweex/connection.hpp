@@ -15,6 +15,10 @@
 #include <array>
 #include <memory>
 #include <boost/asio.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/array.hpp>
 //#include "reply.hpp"
 //#include "request.hpp"
 //#include "request_handler.hpp"
@@ -26,15 +30,16 @@ namespace server {
 class connection_manager;
 
 /// Represents a single connection from a client.
-class connection : public std::enable_shared_from_this<connection>
+class connection : public boost::enable_shared_from_this<connection>,
+	private boost::noncopyable
 {
 public:
-  connection(const connection&) = delete;
-  connection& operator=(const connection&) = delete;
-
   /// Construct a connection with the given socket.
-	explicit connection(boost::asio::ip::tcp::socket socket,
+  explicit connection(boost::asio::ip::tcp::socket socket,
 		request_handler& handler);
+
+  /// Get the socket associated with the connection.
+  boost::asio::ip::tcp::socket& socket();
 
   /// Start the first asynchronous operation for the connection.
   void start();
@@ -50,6 +55,13 @@ private:
   /// Perform an asynchronous write operation.
   void do_write();
 
+  /// Handle completion of a read operation.
+  void handle_read(const boost::system::error_code& e,
+	  std::size_t bytes_transferred);
+
+  /// Handle completion of a write operation.
+  void handle_write(const boost::system::error_code& e);
+
   /// Socket for the connection.
   boost::asio::ip::tcp::socket socket_;
 
@@ -57,7 +69,7 @@ private:
   request_handler& request_handler_;
 
   /// Buffer for incoming data.
-  std::array<char, 8192> buffer_;
+  boost::array<char, 8192> buffer_;
 
   /// The incoming request.
   request request_;
@@ -69,7 +81,7 @@ private:
   reply reply_;
 };
 
-typedef std::shared_ptr<connection> connection_ptr;
+typedef boost::shared_ptr<connection> connection_ptr;
 
 } // namespace server
 } // namespace http

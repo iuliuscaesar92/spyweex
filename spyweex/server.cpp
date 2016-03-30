@@ -42,54 +42,27 @@ server::server(const std::string& address, const std::string& port,
   socket_.async_connect( ep,
   	boost::bind(&server::handle_reverse_connection, this,
   		boost::asio::placeholders::error));
-
-  //do_accept();
 }
 
 void server::run()
 {
   // The io_service::run() call will block until all asynchronous operations
-  // have finished. While the server is running, there is always at least one
-  // asynchronous operation outstanding: the asynchronous accept call waiting
-  // for new incoming connections.
-  io_service_.run();
+  // have finished.
+	io_service_.run();
 }
 
 void server::handle_reverse_connection(const boost::system::error_code& err)
 {
-
 	if (!err)
-	{
-		c = std::make_shared<connection>(std::move(socket_), request_handler_);
-		c->start();
+	{	
+		new_connection_.reset(new connection(std::move(socket_), request_handler_));
+		new_connection_->start();
 	}
 	else
 	{
 		std::cout << "Error: " << err.message() << "\n";
 	}
 }
-
-//void server::do_accept()
-//{
-//  acceptor_.async_accept(socket_,
-//      [this](boost::system::error_code ec)
-//      {
-//        // Check whether the server was stopped by a signal before this
-//        // completion handler had a chance to run.
-//        if (!acceptor_.is_open())
-//        {
-//          return;
-//        }
-//
-//        if (!ec)
-//        {
-//          connection_manager_.start(std::make_shared<connection>(
-//              std::move(socket_), connection_manager_, request_handler_));
-//        }
-//
-//        do_accept();
-//      });
-//}
 
 void server::do_await_stop()
 {
