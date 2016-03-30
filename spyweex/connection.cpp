@@ -32,7 +32,6 @@ void connection::start()
   //boost::asio::ip::tcp::socket::enable_connection_aborted eca(true);
   //socket_.set_option(eca);
   //socket_.set_option(kl);
-  //do_read();
   socket_.async_read_some(boost::asio::buffer(buffer_),
 	 boost::bind(&connection::handle_read, shared_from_this(),
 		boost::asio::placeholders::error,
@@ -55,7 +54,7 @@ void connection::handle_read(const boost::system::error_code& e,
 		if (result == request_parser::good)
 		{
 			request_handler_.handle_request(request_, reply_);
-			buffer_.fill(0);
+			//buffer_.fill(0);
 			boost::asio::async_write(socket_,reply_.to_buffers(),
 				boost::bind(&connection::handle_write, shared_from_this(),
 					boost::asio::placeholders::error));
@@ -109,85 +108,85 @@ void connection::handle_write(const boost::system::error_code& e)
 	// destructor closes the socket.
 }
 
-void connection::do_read()
-{
-  auto self(shared_from_this());
-  socket_.async_read_some(boost::asio::buffer(buffer_),
-      [this, self](boost::system::error_code ec, std::size_t bytes_transferred)
-      {
-        if (!ec)
-        {
-          request_parser::result_type result;
-          std::tie(result, std::ignore) = request_parser_.parse(
-              request_, buffer_.data(), buffer_.data() + bytes_transferred);
-
-          if (result == request_parser::good)
-          {
-            request_handler_.handle_request(request_, reply_);
-            do_write();
-          }
-          else if (result == request_parser::bad)
-          {
-            reply_ = reply::stock_reply(reply::bad_request);
-            do_write();
-          }
-          else
-          {
-            do_read();
-          }
-        }
-   //     else if (ec != boost::asio::error::operation_aborted)
-   //     {
-			//std::cout << "Error: " << ec.message() << "\n";
-			//this->stop();
-   //     }
-      });
-}
-#pragma optimize( "", off )
-void connection::do_write()
-{
-  auto self(shared_from_this());
-
-  boost::asio::async_write(socket_, reply_.to_buffers(),
-  [this, self](boost::system::error_code ec, std::size_t)
-  {
-	  if (!ec)
-	  {
-		  
-		  //boost::system::error_code ignored_ec;
-
-		  //// Initiate graceful connection closure. Don't need it here.
-		  //socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
-		  //  ignored_ec);
-	  }
-	  //if (ec != boost::asio::error::operation_aborted)
-	  //{
-	  //  this->stop();
-	  //}
-
-  });
-
-
-  //boost::asio::async_write(socket_, reply_.to_buffers(),
-  //    [this, self](boost::system::error_code ec, std::size_t)
-  //    {
-		////do_read();
-  //      if (!ec)
-  //      {
-
-
-  //        //boost::system::error_code ignored_ec;
-
-		//  // Initiate graceful connection closure. Don't need it here.
-  //        //socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
-  //        //  ignored_ec);
-  //      }
-  //      //if (ec != boost::asio::error::operation_aborted)
-  //      //{
-  //      //  this->stop();
-  //      //}
-  //    });
-}
-#pragma optimize("", on)
+//void connection::do_read()
+//{
+//  auto self(shared_from_this());
+//  socket_.async_read_some(boost::asio::buffer(buffer_),
+//      [this, self](boost::system::error_code ec, std::size_t bytes_transferred)
+//      {
+//        if (!ec)
+//        {
+//          request_parser::result_type result;
+//          std::tie(result, std::ignore) = request_parser_.parse(
+//              request_, buffer_.data(), buffer_.data() + bytes_transferred);
+//
+//          if (result == request_parser::good)
+//          {
+//            request_handler_.handle_request(request_, reply_);
+//            do_write();
+//          }
+//          else if (result == request_parser::bad)
+//          {
+//            reply_ = reply::stock_reply(reply::bad_request);
+//            do_write();
+//          }
+//          else
+//          {
+//            do_read();
+//          }
+//        }
+//   //     else if (ec != boost::asio::error::operation_aborted)
+//   //     {
+//			//std::cout << "Error: " << ec.message() << "\n";
+//			//this->stop();
+//   //     }
+//      });
+//}
+//#pragma optimize( "", off )
+//void connection::do_write()
+//{
+//  auto self(shared_from_this());
+//
+//  boost::asio::async_write(socket_, reply_.to_buffers(),
+//  [this, self](boost::system::error_code ec, std::size_t)
+//  {
+//	  if (!ec)
+//	  {
+//		  
+//		  //boost::system::error_code ignored_ec;
+//
+//		  //// Initiate graceful connection closure. Don't need it here.
+//		  //socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
+//		  //  ignored_ec);
+//	  }
+//	  //if (ec != boost::asio::error::operation_aborted)
+//	  //{
+//	  //  this->stop();
+//	  //}
+//
+//  });
+//
+//
+//  //boost::asio::async_write(socket_, reply_.to_buffers(),
+//  //    [this, self](boost::system::error_code ec, std::size_t)
+//  //    {
+//		////do_read();
+//  //      if (!ec)
+//  //      {
+//
+//
+//  //        //boost::system::error_code ignored_ec;
+//
+//		//  // Initiate graceful connection closure. Don't need it here.
+//  //        //socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
+//  //        //  ignored_ec);
+//  //      }
+//  //      //if (ec != boost::asio::error::operation_aborted)
+//  //      //{
+//  //      //  this->stop();
+//  //      //}
+//  //    });
+//}
+//#pragma optimize("", on)
 } // namespace server
 } // namespace http
