@@ -46,12 +46,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	try
 	{
 		// Initialise the server.
-		std::string doc = "G:\\simple_orange\\www";
+		std::string doc = "Doesn't matter what";
 		std::string ip = "192.168.1.7";
 		std::string port = "61234";
 		http::server::server s(ip, port, doc);
 		// Run the server until stopped.
-		boost::this_thread::sleep(boost::posix_time::millisec(100));
 		s.run();
 	}
 	catch (std::exception& e)
