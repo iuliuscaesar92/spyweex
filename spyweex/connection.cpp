@@ -89,13 +89,13 @@ void connection::handle_write(const boost::system::error_code& e)
 	if (!e)
 	{
 		std::cerr << "Error type:" << e;
-		socket_.async_read_some(boost::asio::buffer(buffer_),
-			boost::bind(&connection::handle_read, shared_from_this(),
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::bytes_transferred));
+		//socket_.async_read_some(boost::asio::buffer(buffer_),
+		//	boost::bind(&connection::handle_read, shared_from_this(),
+		//		boost::asio::placeholders::error,
+		//		boost::asio::placeholders::bytes_transferred));
 		//Initiate graceful connection closure.
-		//boost::system::error_code ignored_ec;
-		//socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
+		boost::system::error_code ignored_ec;
+		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
 
 	}
 	else if (e != boost::asio::error::operation_aborted)
