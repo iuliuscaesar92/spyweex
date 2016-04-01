@@ -22,6 +22,7 @@ namespace server {
 class connection_manager
 {
 public:
+	typedef boost::shared_ptr<connection> connection_ptr;
   connection_manager(const connection_manager&) = delete;
   connection_manager& operator=(const connection_manager&) = delete;
 

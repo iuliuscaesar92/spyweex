@@ -28,10 +28,10 @@ connection::connection(boost::asio::ip::tcp::socket socket, request_handler& han
 
 void connection::start()
 {
-  //boost::asio::ip::tcp::socket::keep_alive kl(true);
-  //boost::asio::ip::tcp::socket::enable_connection_aborted eca(true);
-  //socket_.set_option(eca);
-  //socket_.set_option(kl);
+  boost::asio::ip::tcp::socket::keep_alive kl(true);
+  boost::asio::ip::tcp::socket::enable_connection_aborted eca(true);
+  socket_.set_option(eca);
+  socket_.set_option(kl);
   socket_.async_read_some(boost::asio::buffer(buffer_),
 	 boost::bind(&connection::handle_read, shared_from_this(),
 		boost::asio::placeholders::error,
@@ -55,16 +55,19 @@ void connection::handle_read(const boost::system::error_code& e,
 		{
 			request_handler_.handle_request(request_, reply_);
 			//buffer_.fill(0);
-			boost::asio::async_write(socket_,reply_.to_buffers(),
-				boost::bind(&connection::handle_write, shared_from_this(),
-					boost::asio::placeholders::error));
+			boost::asio::async_write(socket_, 
+				reply_.to_buffers(),
+				boost::bind(&connection::handle_write, shared_from_this(), 
+					boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
+				);
 		}
 		else if (result == request_parser::bad)
 		{
 			reply_ = reply::stock_reply(reply::bad_request);
 			boost::asio::async_write(socket_, reply_.to_buffers(),
 				boost::bind(&connection::handle_write, shared_from_this(),
-					boost::asio::placeholders::error));
+					boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
+				);
 		}
 		else
 		{
@@ -84,24 +87,40 @@ void connection::handle_read(const boost::system::error_code& e,
 	// handler returns. The connection class's destructor closes the socket.
 }
 
-void connection::handle_write(const boost::system::error_code& e)
+void connection::handle_write(const boost::system::error_code& e, std::size_t bytes)
 {
-	if (!e)
-	{
-		std::cerr << "Error type:" << e;
-		//socket_.async_read_some(boost::asio::buffer(buffer_),
-		//	boost::bind(&connection::handle_read, shared_from_this(),
-		//		boost::asio::placeholders::error,
-		//		boost::asio::placeholders::bytes_transferred));
-		//Initiate graceful connection closure.
-		boost::system::error_code ignored_ec;
-		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
+	//std::string s(this->reply_.to_buffers(), this->reply_.to_buffers().data());
+	//int a = this->reply_.to_buffers().size();
+	//if(this->reply_.to_buffers().size() == bytes)
+	//{
+		socket_.async_read_some(boost::asio::buffer(buffer_),
+			boost::bind(&connection::handle_read, shared_from_this(),
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+	//}
+	//if(e == boost::asio::error::no_data)
+	//{
+	//	socket_.async_read_some(boost::asio::buffer(buffer_),
+	//		boost::bind(&connection::handle_read, shared_from_this(),
+	//			boost::asio::placeholders::error,
+	//			boost::asio::placeholders::bytes_transferred));
+	//}
+	//if (!e)
+	//{
+	//	std::cerr << "Error type:" << e;
+	//	//socket_.async_read_some(boost::asio::buffer(buffer_),
+	//	//	boost::bind(&connection::handle_read, shared_from_this(),
+	//	//		boost::asio::placeholders::error,
+	//	//		boost::asio::placeholders::bytes_transferred));
+	//	//Initiate graceful connection closure.
+	//	boost::system::error_code ignored_ec;
+	//	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
 
-	}
-	else if (e != boost::asio::error::operation_aborted)
-	{
-		this->stop();
-	}
+	//}
+	//else if (e != boost::asio::error::operation_aborted)
+	//{
+	//	this->stop();
+	//}
 	// No new asynchronous operations are started. This means that all shared_ptr
 	// references to the connection object will disappear and the object will be
 	// destroyed automatically after this handler returns. The connection class's

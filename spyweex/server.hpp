@@ -34,7 +34,7 @@ public:
   void run();
 
 private:
-
+  typedef boost::shared_ptr<connection> connection_ptr;
   /// Wait for a request to stop the server.
   void do_await_stop();
 
@@ -55,6 +55,7 @@ private:
 
   connection_ptr new_connection_;
 
+  
 };
 
 } // namespace server

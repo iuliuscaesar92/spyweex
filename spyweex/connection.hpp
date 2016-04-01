@@ -34,6 +34,8 @@ class connection : public boost::enable_shared_from_this<connection>,
 	private boost::noncopyable
 {
 public:
+
+ 
   /// Construct a connection with the given socket.
   explicit connection(boost::asio::ip::tcp::socket socket,
 		request_handler& handler);
@@ -49,6 +51,7 @@ public:
 
 
 private:
+
   /// Perform an asynchronous read operation.
   void do_read();
 
@@ -60,7 +63,7 @@ private:
 	  std::size_t bytes_transferred);
 
   /// Handle completion of a write operation.
-  void handle_write(const boost::system::error_code& e);
+  void handle_write(const boost::system::error_code& e, std::size_t bytes);
 
   /// Socket for the connection.
   boost::asio::ip::tcp::socket socket_;
@@ -79,9 +82,10 @@ private:
 
   /// The reply to be sent back to the client.
   reply reply_;
+
+  typedef boost::shared_ptr<connection> connection_ptr;
 };
 
-typedef boost::shared_ptr<connection> connection_ptr;
 
 } // namespace server
 } // namespace http
