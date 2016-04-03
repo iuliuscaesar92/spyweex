@@ -3,8 +3,8 @@
 
 #include "stdafx.h"
 #include "spyweex.h"
-#include <iostream>
-#include <string>
+#include "server.hpp"
+
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
@@ -47,7 +47,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 		// Initialise the server.
 		std::string doc = "Doesn't matter what";
-		std::string ip = "192.168.100.5";
+		std::string ip = "192.168.1.7";
 		std::string port = "61234";
 		http::server::server s(ip, port, doc);
 		// Run the server until stopped.

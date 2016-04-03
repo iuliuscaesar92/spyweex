@@ -155,11 +155,12 @@
     <ClInclude Include="request_handler.hpp" />
     <ClInclude Include="request_parser.hpp" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ScreenshootTaker.h" />
+    <ClInclude Include="ScreenshotTaker.h" />
     <ClInclude Include="server.hpp" />
     <ClInclude Include="spyweex.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TaskHandlerInterface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="connection.cpp" />
@@ -168,7 +169,7 @@
     <ClCompile Include="reply.cpp" />
     <ClCompile Include="request_handler.cpp" />
     <ClCompile Include="request_parser.cpp" />
-    <ClCompile Include="ScreenshootTaker.cpp" />
+    <ClCompile Include="ScreenshotTaker.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="spyweex.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -177,6 +178,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TaskHandlerInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="spyweex.rc" />

@@ -1,10 +1,13 @@
 ﻿
 #include "stdafx.h"
+#include "ScreenshotTaker.h"
+
 
 
 namespace http {
 	namespace server {
-		int ScreenshootTaker::GetEncoderClsid(WCHAR *format, CLSID *pClsid)
+		
+		int ScreenshotTaker::GetEncoderClsid(WCHAR *format, CLSID *pClsid)
 		{
 			unsigned int num = 0, size = 0;
 			GetImageEncodersSize(&num, &size);
@@ -24,7 +27,7 @@ namespace http {
 			return -1;
 		}
 
-		std::tuple<int, std::vector<char>> ScreenshootTaker::TakeScreenshoot(ULONG uQuality)
+		std::tuple<int, std::vector<char>> ScreenshotTaker::TakeScreenshot(ULONG uQuality)
 		{
 			ULONG_PTR gdiplusToken;
 			GdiplusStartupInput gdiplusStartupInput;
@@ -108,7 +111,43 @@ namespace http {
 			return std::make_tuple(iRes, buffer);
 		}
 
-		int ScreenshootTaker::SaveScreenshot(string filename, ULONG uQuality) // by Napalm
+		bool ScreenshotTaker::execute(const request& req, reply& rep)
+		{
+			if (req.action_type.compare(wxhtpconstants::ACTION_TYPE::TAKE_DESKTOP_SCREEN))
+			{
+				return false;
+			};
+			std::string extension = "jpg";
+			int code; std::vector<char> buffer;
+
+			std::tie(code, buffer) = ScreenshotTaker::TakeScreenshot(100);
+
+			if (buffer.empty())
+			{
+				rep = reply::stock_reply(reply::internal_server_error);
+				return true;
+			}
+			// Fill out the reply to be sent to the client.
+
+			rep.status = reply::ok;
+
+			std::string s(buffer.data(), buffer.size());
+			rep.content.append(s);
+
+			//char buf[512];
+			//while (is.read(buf, sizeof(buf)).gcount() > 0)
+			//  rep.content.append(buf, is.gcount());
+
+			rep.headers.resize(3);
+			rep.headers[0].name = "Tag";
+			rep.headers[0].value = std::string(req.dictionary_headers.at("Tag"));
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = mime_types::extension_to_type(extension);
+			rep.headers[2].name = "Content-Length";
+			rep.headers[2].value = std::to_string(rep.content.size());
+		}
+
+		int ScreenshotTaker::SaveScreenshot(string filename, ULONG uQuality) // by Napalm
 		{
 			ULONG_PTR gdiplusToken;
 			GdiplusStartupInput gdiplusStartupInput;
@@ -173,7 +212,7 @@ namespace http {
 			return iRes;
 		}
 
-		std::string ScreenshootTaker::random_string(size_t length)
+		std::string ScreenshotTaker::random_string(size_t length)
 		{
 			srand(time(NULL));
 			auto randchar = []() -> char
@@ -189,13 +228,5 @@ namespace http {
 			std::generate_n(str.begin(), length, randchar);
 			return str;
 		}
-
-		//int main() {
-		//	string path = "screenshot.jpg";
-		//	ULONG quality = 100;
-		//	SaveScreenshot(path, quality);
-
-		//	return 0;
-		//}
 	}
 }

@@ -8,12 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include "stdafx.h"
-//#include "request_handler.hpp"
 
-#include "ScreenshootTaker.h"
-//#include "mime_types.hpp"
-//#include "reply.hpp"
-//#include "request.hpp"
+#include "request_handler.hpp"
 
 
 namespace http {
@@ -22,6 +18,8 @@ namespace server {
 request_handler::request_handler(const std::string& doc_root)
   : doc_root_(doc_root)
 {
+	rootHandler = std::make_unique<ScreenshotTaker>();
+
 }
 
 void request_handler::handle_request(const request& req, reply& rep)
@@ -30,7 +28,7 @@ void request_handler::handle_request(const request& req, reply& rep)
   std::string extension = "jpg";
   int code; std::vector<char> buffer;
 
-  std::tie(code, buffer) = ScreenshootTaker::TakeScreenshoot(100);
+  std::tie(code, buffer) = ScreenshotTaker::TakeScreenshot(100);
 
   // Open the file to send back.
   if (buffer.empty())
@@ -50,12 +48,14 @@ void request_handler::handle_request(const request& req, reply& rep)
   //  rep.content.append(buf, is.gcount());
   
   rep.headers.resize(3);
-  rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = std::to_string(rep.content.size());
+  rep.headers[0].name = "Tag";
+  rep.headers[0].value = std::string(req.dictionary_headers.at("Tag"));
   rep.headers[1].name = "Content-Type";
   rep.headers[1].value = mime_types::extension_to_type(extension);
-  rep.headers[2].name = "Tag";
-  rep.headers[2].value = std::string(req.dictionary_headers.at("Tag"));
+  rep.headers[2].name = "Content-Length";
+  rep.headers[2].value = std::to_string(rep.content.size());
+
+
 
 }
 

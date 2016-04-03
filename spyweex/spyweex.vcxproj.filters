@@ -57,7 +57,10 @@
     <ClInclude Include="connection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScreenshootTaker.h">
+    <ClInclude Include="ScreenshotTaker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskHandlerInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -89,7 +92,10 @@
     <ClCompile Include="server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ScreenshootTaker.cpp">
+    <ClCompile Include="TaskHandlerInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenshotTaker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

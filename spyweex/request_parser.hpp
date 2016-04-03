@@ -11,6 +11,7 @@
 #ifndef HTTP_REQUEST_PARSER_HPP
 #define HTTP_REQUEST_PARSER_HPP
 
+#include "stdafx.h"
 #include <tuple>
 
 namespace http {

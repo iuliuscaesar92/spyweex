@@ -8,8 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include "stdafx.h"
-//#include "reply.hpp"
-#include <string>
+
+#include "reply.hpp"
 
 namespace http {
 namespace server {
@@ -17,7 +17,7 @@ namespace server {
 namespace status_strings {
 
 const std::string ok =
-  "HTTP/1.0 200 OK\r\n";
+  "WXHTP/1.0 200 OK\r\n";
 const std::string created =
   "HTTP/1.0 201 Created\r\n";
 const std::string accepted =

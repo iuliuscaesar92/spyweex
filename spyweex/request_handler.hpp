@@ -11,8 +11,14 @@
 #ifndef HTTP_REQUEST_HANDLER_HPP
 #define HTTP_REQUEST_HANDLER_HPP
 
-#include <string>
+#include "stdafx.h"
+
 #include <boost/noncopyable.hpp>
+#include "TaskHandlerInterface.h"
+#include "ScreenshotTaker.h"
+#include "reply.hpp"
+#include "request.hpp"
+#include "mime_types.hpp"
 
 // ( . )v( . )
 namespace http {
@@ -36,6 +42,7 @@ private:
   /// The directory containing the files to be served.
   std::string doc_root_;
 
+  std::unique_ptr<TaskHandlerInterface> rootHandler;
   /// Perform URL-decoding on a string. Returns false if the encoding was
   /// invalid.
   static bool url_decode(const std::string& in, std::string& out);

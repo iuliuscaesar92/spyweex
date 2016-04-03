@@ -8,12 +8,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include "stdafx.h"
-//#include "server.hpp"
+#include "server.hpp"
 #include <signal.h>
-#include <utility>
+//#include <utility>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <iostream>
 
 
 using namespace boost::asio;

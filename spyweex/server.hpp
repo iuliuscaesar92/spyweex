@@ -13,9 +13,8 @@
 
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <string>
+
 #include "connection.hpp"
-#include "connection_manager.hpp"
 #include "request_handler.hpp"
 
 namespace http {

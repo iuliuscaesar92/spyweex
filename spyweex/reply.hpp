@@ -11,10 +11,10 @@
 #ifndef HTTP_REPLY_HPP
 #define HTTP_REPLY_HPP
 
-#include <string>
-#include <vector>
-#include <boost/asio.hpp>
+#include "stdafx.h"
+
 #include "header.hpp"
+#include <boost/asio.hpp>
 
 namespace http {
 namespace server {
