@@ -1,7 +1,7 @@
 ﻿
 #ifndef TASK_HANDLER_INTERFACE
 #define TASK_HANDLER_INTERFACE
-#include "stdafx.h"
+
 #include "request.hpp"
 #include "reply.hpp"
 #include <memory>

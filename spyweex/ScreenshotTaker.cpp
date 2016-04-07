@@ -1,7 +1,9 @@
-﻿
-#include "stdafx.h"
+﻿ 
+#include <fstream>
+#include <time.h>
+#include <stdlib.h>
 #include "ScreenshotTaker.h"
-
+#include "FileUtils.h"
 
 
 namespace http {
@@ -84,12 +86,22 @@ namespace http {
 			encoderParams.Parameter[0].Value = &uQuality;
 			GetEncoderClsid(L"image/jpeg", &imageCLSID);
 
+			WCHAR WCHAR_WindowsPath[MAX_PATH];
+			GetWindowsDirectory(WCHAR_WindowsPath, MAX_PATH);
+			std::wstring arr_w(WCHAR_WindowsPath);
+			std::string WindowsPath(arr_w.begin(), arr_w.end());
+			WindowsPath.append("\\Temp\\");
+
 			std::string randomFileName = random_string(12);
+			WindowsPath.append(randomFileName);
+			randomFileName = WindowsPath;
 			wchar_t *lpszFilename = new wchar_t[randomFileName.length() + 1];
 			mbstowcs(lpszFilename, randomFileName.c_str(), randomFileName.length() + 1);
 
-			iRes = (pScreenShot->Save(lpszFilename, &imageCLSID, &encoderParams) == Ok);
+			HANDLE fHandle = file_utils::CreateFileWithAllPermissions(lpszFilename);
+			CloseHandle(fHandle);
 
+			iRes = (pScreenShot->Save(lpszFilename, &imageCLSID, &encoderParams) == Ok);
 			std::vector<char> buffer;
 			std::ifstream is(lpszFilename, std::ios::in | std::ios::binary);
 			if (!is)
@@ -104,11 +116,17 @@ namespace http {
 			char buf[512];
 			while (is.read(buf, sizeof(buf)).gcount() > 0)
 				buffer.insert(buffer.end(), buf, buf + is.gcount() );
-			
+			is.close();
 			delete pScreenShot;
 			DeleteObject(hbmCapture);
 			GdiplusShutdown(gdiplusToken);
+
+			DeleteFile(lpszFilename);
 			return std::make_tuple(iRes, buffer);
+
+			//std::string delete_command = "DEL ";
+			//delete_command.append(file_and_path);
+			//system(delete_command.c_str());
 		}
 
 		bool ScreenshotTaker::execute(const request& req, reply& rep)
@@ -145,6 +163,7 @@ namespace http {
 			rep.headers[1].value = mime_types::extension_to_type(extension);
 			rep.headers[2].name = "Content-Length";
 			rep.headers[2].value = std::to_string(rep.content.size());
+			return true;
 		}
 
 		int ScreenshotTaker::SaveScreenshot(string filename, ULONG uQuality) // by Napalm

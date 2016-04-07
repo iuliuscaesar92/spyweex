@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spyweex", "spyweex\spyweex.vcxproj", "{2A360A0E-A697-40F2-8604-6895F4F34DE5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mhook-dll", "mhook-dll\mhook-dll.vcxproj", "{3652CB35-FA66-46EA-96D5-DA49EE4513C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{2A360A0E-A697-40F2-8604-6895F4F34DE5}.Release|x64.Build.0 = Release|x64
 		{2A360A0E-A697-40F2-8604-6895F4F34DE5}.Release|x86.ActiveCfg = Release|Win32
 		{2A360A0E-A697-40F2-8604-6895F4F34DE5}.Release|x86.Build.0 = Release|Win32
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Debug|x64.ActiveCfg = Debug|x64
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Debug|x64.Build.0 = Debug|x64
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Debug|x86.ActiveCfg = Debug|Win32
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Debug|x86.Build.0 = Debug|Win32
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Release|x64.ActiveCfg = Release|x64
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Release|x64.Build.0 = Release|x64
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Release|x86.ActiveCfg = Release|Win32
+		{3652CB35-FA66-46EA-96D5-DA49EE4513C7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

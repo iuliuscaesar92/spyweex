@@ -1,17 +1,33 @@
 ﻿
 
-#include "stdafx.h"
+#ifndef SCREENSHOT_TAKER_HPP
+#define SCREENSHOT_TAKER_HPP
+
+#include <iostream>
+#include <string>
 
 #include "TaskHandlerInterface.h"
 #include "request.hpp"
 #include "reply.hpp"
 #include "mime_types.hpp"
 
+
+#include <windows.h>
+#ifndef min
+#define min(x,y) ((x) < (y) ? (x) : (y))
+#endif
+#ifndef max
+#define max(x,y) ((x) > (y) ? (x) : (y))
+#endif;
+#include <Unknwn.h>  
+#include <gdiplus.h>
+#undef min
+#undef max
+
 #pragma comment(lib, "gdiplus.lib")
 using namespace std;
 using namespace Gdiplus;
-// oda
-// oda asd
+
 namespace http {
 	namespace server {
 
@@ -31,3 +47,4 @@ namespace http {
 		};
 	}
 }
+#endif

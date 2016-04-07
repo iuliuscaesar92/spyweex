@@ -11,7 +11,9 @@
 #ifndef HTTP_REQUEST_HPP
 #define HTTP_REQUEST_HPP
 
-#include "stdafx.h"
+#include <string>
+#include <vector>
+#include <map>
 #include "header.hpp"
 
 namespace http {

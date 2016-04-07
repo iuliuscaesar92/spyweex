@@ -11,16 +11,13 @@
 #ifndef HTTP_REQUEST_HANDLER_HPP
 #define HTTP_REQUEST_HANDLER_HPP
 
-#include "stdafx.h"
-
 #include <boost/noncopyable.hpp>
 #include "TaskHandlerInterface.h"
 #include "ScreenshotTaker.h"
+#include <string>
 #include "reply.hpp"
 #include "request.hpp"
-#include "mime_types.hpp"
 
-// ( . )v( . )
 namespace http {
 namespace server {
 

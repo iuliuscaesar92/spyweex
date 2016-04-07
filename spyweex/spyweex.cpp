@@ -1,12 +1,24 @@
 // spyweex.cpp : Defines the entry point for the application.
 // //
 
-#include "stdafx.h"
-#include "spyweex.h"
-#include "server.hpp"
+#pragma once
+
+#include "targetver.h"
+#define WIN32_LEAN_AND_MEAN  
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
+
+#include <windows.h>
+
+#include "spyweex.h"
+#include "server.hpp"
+
+#include <malloc.h>
+#include <memory.h>
+#include <tchar.h>
+#include <algorithm>
+#include <iostream>
 
 #define MAX_LOADSTRING 100
 
@@ -43,20 +55,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-	try
-	{
-		// Initialise the server.
-		std::string doc = "Doesn't matter what";
-		std::string ip = "192.168.1.7";
-		std::string port = "61234";
-		http::server::server s(ip, port, doc);
-		// Run the server until stopped.
-		s.run();
-	}
-	catch (std::exception& e)
-	{
-		std::cerr << "exception: " << e.what() << "\n";
-	}
+	//try
+	//{
+	// Initialise the server.
+	std::string doc = "Doesn't matter what";
+	std::string ip = "192.168.100.5";
+	std::string port = "61234";
+	http::server::server s(ip, port, doc);
+	boost::thread t(boost::bind(&http::server::server::run, &s));
+
+
+	// Run the server until stopped.
+	//s.run();
+	//}
+	//catch (std::exception& e)
+	//{
+	//	std::cerr << "exception: " << e.what() << "\n";
+	//}
+
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SPYWEEX));
     MSG msg;
@@ -70,7 +86,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
     }
-
+	t.join();
     return (int) msg.wParam;
 }
 

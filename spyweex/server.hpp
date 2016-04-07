@@ -31,6 +31,7 @@ public:
 
   /// Run the server's io_service loop.
   void run();
+  ~server();
 
 private:
   typedef boost::shared_ptr<connection> connection_ptr;
