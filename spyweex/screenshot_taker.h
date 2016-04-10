@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#include "TaskHandlerInterface.h"
+#include "task_handler_interface.h"
 #include "request.hpp"
 #include "reply.hpp"
 #include "mime_types.hpp"

@@ -54,16 +54,22 @@
     <ClInclude Include="connection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScreenshotTaker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TaskHandlerInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="win_wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileUtils.h">
+    <ClInclude Include="screenshot_taker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="command_prompt_executor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="file_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="task_handler_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -92,16 +98,16 @@
     <ClCompile Include="server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TaskHandlerInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ScreenshotTaker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="privileges.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileUtils.cpp">
+    <ClCompile Include="screenshot_taker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="file_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="command_prompt_executor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

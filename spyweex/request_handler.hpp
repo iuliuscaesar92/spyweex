@@ -12,8 +12,8 @@
 #define HTTP_REQUEST_HANDLER_HPP
 
 #include <boost/noncopyable.hpp>
-#include "TaskHandlerInterface.h"
-#include "ScreenshotTaker.h"
+#include "task_handler_interface.h"
+#include "screenshot_taker.h"
 #include <string>
 #include "reply.hpp"
 #include "request.hpp"

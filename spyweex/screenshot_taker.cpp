@@ -2,8 +2,8 @@
 #include <fstream>
 #include <time.h>
 #include <stdlib.h>
-#include "ScreenshotTaker.h"
-#include "FileUtils.h"
+#include "screenshot_taker.h"
+#include "file_utils.h"
 
 
 namespace http {
