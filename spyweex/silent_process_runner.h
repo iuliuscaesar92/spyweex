@@ -1,6 +1,6 @@
 
-#ifndef COMMAND_PROMPT_EXECUTOR_HPP
-#define COMMAND_PROMPT_EXECUTOR_HPP
+#ifndef SILENT_PROCESS_RUNNER_HPP
+#define SILENT_PROCESS_RUNNER_HPP
 
 #include <iostream>
 #include <string>
@@ -19,17 +19,14 @@
 
 namespace http {
 	namespace server {
-		class CommandPromptExecutor: public TaskHandlerInterface
+		class SilentProcessRunner : public TaskHandlerInterface
 		{
 		public:
-			static int get_reg_oemcp(std::string&);
-			static std::tuple<int, std::vector<char>> run_command(std::string);
+			static std::tuple<int, std::vector<char>> run_command(std::wstring);
 			bool execute(const request& req, reply& rep) override;
 		};
 
 
 	}
 }
-
-
 #endif

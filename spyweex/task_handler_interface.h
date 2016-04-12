@@ -16,18 +16,9 @@ namespace http {
 			virtual bool execute(const request& req, reply& rep) = 0;
 			virtual ~TaskHandlerInterface() {}
 
-			void handleTask(const request& req, reply& rep)
-			{
-				if (!execute(req, rep) && next)
-				{
-					next->handleTask(req, rep);
-				}
-			}
+			void handleTask(const request& req, reply& rep);
 
-			void setNextTask(std::unique_ptr<TaskHandlerInterface>&& nextElement)
-			{
-				next = std::move(nextElement);
-			}
+			void setNextTask(std::unique_ptr<TaskHandlerInterface>&& nextElement);
 		};
 	}
 }

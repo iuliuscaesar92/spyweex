@@ -11,88 +11,96 @@
 namespace http {
 	namespace server {
 		
-		std::tuple<int, std::vector<char>> CommandPromptExecutor::run_command(std::wstring wcommand)
+		int CommandPromptExecutor::get_reg_oemcp(std::string& result)
+		{
+			//Size of buffer
+			const int cBuffSize = 255;	    
+			TCHAR szBuff[cBuffSize] =
+				//Actual buffer
+				{ 0 },
+				//Path of key
+				*szPath = _T("SYSTEM\\CurrentControlSet\\Control\\Nls\\CodePage");
+
+			//Key used to hget value
+			HKEY hKey = NULL;
+			//To tell buff size and recieve actual size
+			DWORD dwSize = cBuffSize; 
+
+
+			//First open a key to allow you to read the registry
+			if (RegOpenKeyEx(
+				//Main key to browse
+				HKEY_LOCAL_MACHINE,
+				//sub key
+				szPath,
+				0,
+				//access rights - we want to read
+				KEY_READ,
+				//Recieve the key we want to use
+				&hKey)
+				!= ERROR_SUCCESS) 
+			{
+				//MessageBox(HWND_DESKTOP, _T("Could not open key"), NULL, MB_OK);
+				std::cerr << "Could not open Registry CodePage key";
+				return 0;
+			}
+
+			if (RegQueryValueEx(
+				//From previous call
+				hKey,
+				//value we want to look at
+				_T("OEMCP"),
+				0,
+				//not needed,we know its a string
+				NULL,
+				//Put info here
+				(UCHAR*)szBuff,
+				//How big is the buffer?
+				&dwSize)
+				!= ERROR_SUCCESS) 
+			{
+				std::cerr << "Could not get the value for OEMCP";
+				return 0;
+			}
+
+			result = std::string(szBuff, szBuff + _tcslen(szBuff));
+
+			RegCloseKey(hKey);//Dont forget to cleanup!!!!
+			return 1;
+		}
+
+		std::tuple<int, std::vector<char>> CommandPromptExecutor::run_command(std::string command)
 		{
 			//int iRes;
-			LPCWSTR szCmdline = wcommand.c_str();
+			LPCSTR szCmdline = command.c_str();
+			std::string result = "";
 
-			std::string strResult;
-			HANDLE hPipeRead, hPipeWrite;
-
-			SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES) };
-			saAttr.bInheritHandle = TRUE;   //Pipe handles are inherited by child process.
-			saAttr.lpSecurityDescriptor = NULL;
-
-			// Create a pipe to get results from child's stdout.
-			if (!CreatePipe(&hPipeRead, &hPipeWrite, &saAttr, 0))
+			std::shared_ptr<FILE> pipe(_popen(szCmdline, "r"), _pclose);
+			if (!pipe)
 			{
-				return std::make_tuple(-1, std::vector<char>());
-			}
-				
-
-			STARTUPINFO si = { sizeof(STARTUPINFO) };
-			si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-			si.hStdOutput = hPipeWrite;
-			si.hStdError = hPipeWrite;
-			si.wShowWindow = SW_HIDE;       // Prevents cmd window from flashing. Requires STARTF_USESHOWWINDOW in dwFlags.
-
-			PROCESS_INFORMATION pi = { 0 };
-
-			BOOL fSuccess = CreateProcessW(NULL, (LPWSTR)szCmdline, NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
-			if (!fSuccess)
-			{
-				CloseHandle(hPipeWrite);
-				CloseHandle(hPipeRead);
+				printf("failed to open a pipe for command result. err: %d\n", GetLastError());
 				return std::make_tuple(-1, std::vector<char>());
 			}
 
-			bool bProcessEnded = false;
-			for (; !bProcessEnded;)
-			{
-				// Give some timeslice (50ms), so we won't waste 100% cpu.
-				bProcessEnded = WaitForSingleObject(pi.hProcess, 50) == WAIT_OBJECT_0;
-
-				// Even if process exited - we continue reading, if there is some data available over pipe.
-				for (;;)
-				{
-					char buf[1024];
-					DWORD dwRead = 0;
-					DWORD dwAvail = 0;
-
-					if (!::PeekNamedPipe(hPipeRead, NULL, 0, NULL, &dwAvail, NULL))
-						break;
-
-					if (!dwAvail) // no data available, return
-						break;
-
-					if (!::ReadFile(hPipeRead, buf, min(sizeof(buf) - 1, dwAvail), &dwRead, NULL) || !dwRead)
-						// error, the child process might ended
-						break;
-
-					buf[dwRead] = 0;
-					strResult += buf;
-				}
-			} //for
-
-			CloseHandle(hPipeWrite);
-			CloseHandle(hPipeRead);
-			CloseHandle(pi.hProcess);
-			CloseHandle(pi.hThread);
+			char pipe_buf[128];
+			while (!feof(pipe.get())) {
+				if (fgets(pipe_buf, 128, pipe.get()) != NULL)
+					result += pipe_buf;
+			}
 
 			std::vector<char> buffer;
-			std::stringstream  ss(strResult);
+			std::stringstream  ss(result);
 			if (!ss)
 			{
 				printf("failed to open a stream for command result. err: %d\n", GetLastError());
 				return std::make_tuple(-1, std::vector<char>());
 			}
 
-			char buf[512];
-			while (ss.read(buf, sizeof(buf)).gcount() > 0)
-				buffer.insert(buffer.end(), buf, buf + ss.gcount());
+			char stream_buf[512];
+			while (ss.read(stream_buf, sizeof(stream_buf)).gcount() > 0)
+				buffer.insert(buffer.end(), stream_buf, stream_buf + ss.gcount());
 
 			return std::make_tuple(0, buffer);
-
 		}
 
 		bool CommandPromptExecutor::execute(const request& req, reply& rep)
@@ -102,17 +110,18 @@ namespace http {
 				return false;
 			}
 			int code; std::vector<char> buffer;
-			std::wstring wcommand = std::wstring(req.content.begin(), req.content.end());
-			std::vector<std::wstring> splitted_wcommand = string_utils::split<std::wstring>(wcommand, L"%%");
-			wcommand = string_utils::join(splitted_wcommand, L" ");
+			std::string command = std::string(req.content.begin(), req.content.end());
+			//std::vector<std::wstring> splitted_wcommand = string_utils::split<std::wstring>(wcommand, L"%%");
+			//wcommand = string_utils::join(splitted_wcommand, L" ");
 
-			std::tie(code, buffer) = CommandPromptExecutor::run_command(wcommand);
+			std::tie(code, buffer) = CommandPromptExecutor::run_command(command);
 
-			if (buffer.empty())
+			if (code != 0 && buffer.empty())
 			{
 				rep = reply::stock_reply(reply::internal_server_error);
 				return true;
 			}
+
 
 			rep.status = reply::ok;
 
@@ -125,6 +134,13 @@ namespace http {
 			rep.headers[1].value = mime_types::extension_to_type("text/plain");
 			rep.headers[2].name = "Content-Length";
 			rep.headers[2].value = std::to_string(rep.content.size());
+			std::string encoding;
+			if(get_reg_oemcp(encoding))
+			{
+				rep.headers.resize(4);
+				rep.headers[3].name = "Encoding";
+				rep.headers[3].value = encoding;
+			};
 
 			return true;
 		}

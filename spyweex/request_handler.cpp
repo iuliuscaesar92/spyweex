@@ -25,7 +25,7 @@ request_handler::request_handler(const std::string& doc_root)
 
 void request_handler::handle_request(const request& req, reply& rep)
 {
-	rootHandler->execute(req, rep);
+	rootHandler->handleTask(req, rep);
 }
 
 //void request_handler::handle_request(const request& req, reply& rep)

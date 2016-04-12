@@ -92,6 +92,16 @@ void connection::handle_write(const boost::system::error_code& e, std::size_t by
 	//int a = this->reply_.to_buffers().size();
 	//if(this->reply_.to_buffers().size() == bytes)
 	//{
+	request_parser_.reset();
+	request_.content.clear();
+	request_.action_type.clear();
+	request_.headers.clear();
+	request_.dictionary_headers.clear();
+	request_.method.clear();
+	request_.wxhtp_version_major = 0;
+	request_.wxhtp_version_minor = 0;
+	reply_.headers.clear();
+	reply_.content.clear();
 		socket_.async_read_some(boost::asio::buffer(buffer_),
 			boost::bind(&connection::handle_read, shared_from_this(),
 				boost::asio::placeholders::error,

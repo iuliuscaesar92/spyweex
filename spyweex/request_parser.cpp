@@ -308,8 +308,9 @@ request_parser::result_type request_parser::consume(request& req, char input)
 	}
 
   case content:
-	if (content_iterator == atoi(req.dictionary_headers["Content-Length"].c_str() - 1))
+	if (content_iterator == atoi(req.dictionary_headers["Content-Length"].c_str()) - 1)
 	{
+		req.content.push_back(input);
 		return good;
 	}
 	else
