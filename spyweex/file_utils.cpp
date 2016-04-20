@@ -1,5 +1,8 @@
 
 #include "file_utils.h"
+#include "string_utils.h"
+
+
 namespace http
 {
 	namespace server
@@ -45,6 +48,24 @@ namespace http
 
 				return h_file;
 			}
+
+			wchar_t * make_temp_file_path()
+			{
+
+				WCHAR WCHAR_WindowsPath[MAX_PATH];
+				GetWindowsDirectory(WCHAR_WindowsPath, MAX_PATH);
+				std::wstring arr_w(WCHAR_WindowsPath);
+				std::string WindowsPath(arr_w.begin(), arr_w.end());
+				WindowsPath.append("\\Temp\\");
+				std::string randomFileName = string_utils::random_string(12);
+				WindowsPath.append(randomFileName);
+				randomFileName = WindowsPath;
+				wchar_t *lpszFilename = new wchar_t[randomFileName.length() + 1];
+				mbstowcs(lpszFilename, randomFileName.c_str(), randomFileName.length() + 1);
+
+				return lpszFilename;
+			}
+
 
 			//HANDLE hFile = CreateFile(
 			//	lpszFilename,				// lpFileName

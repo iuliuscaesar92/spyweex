@@ -50,7 +50,7 @@ public:
 private:
 
   /// Perform an asynchronous read operation.
-  void do_read();
+  void do_async_read();
 
   /// Perform an asynchronous write operation.
   void do_write();
@@ -60,7 +60,7 @@ private:
 	  std::size_t bytes_transferred);
 
   /// Handle completion of a write operation.
-  void handle_write(const boost::system::error_code& e, std::size_t bytes);
+  void handle_write(std::shared_ptr<request> req, std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes);
 
   /// Socket for the connection.
   boost::asio::ip::tcp::socket socket_;

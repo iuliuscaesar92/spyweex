@@ -13,10 +13,10 @@ namespace http {
 			std::unique_ptr<TaskHandlerInterface> next;
 
 		public:
-			virtual bool execute(const request& req, reply& rep) = 0;
+			virtual bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) = 0;
 			virtual ~TaskHandlerInterface() {}
 
-			void handleTask(const request& req, reply& rep);
+			void handleTask(std::shared_ptr<request> req, std::shared_ptr<reply> rep);
 
 			void setNextTask(std::unique_ptr<TaskHandlerInterface>&& nextElement);
 		};

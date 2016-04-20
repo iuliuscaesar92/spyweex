@@ -56,7 +56,37 @@ struct reply
   std::vector<boost::asio::const_buffer> to_buffers();
 
   /// Get a stock reply.
-  static reply stock_reply(status_type status);
+  static std::shared_ptr<reply> stock_reply(status_type status);
+
+  void clear_fields()
+  {
+	  this->headers.clear();
+	  this->content.clear();
+  }
+
+  reply()
+  {
+	  this->status = status_type::ok;
+  }
+  reply(const reply& rep)
+  {
+	  this->status = rep.status;
+	  this->headers = rep.headers;
+	  this->content = rep.content;
+  }
+
+  reply& operator=(const reply& obj) {
+	  if(this == &obj)
+	  {
+		  return *this;
+	  }
+	  this->status = obj.status;
+	  this->headers = obj.headers;
+	  this->content = obj.content;
+
+	  return *this;
+
+  }
 };
 
 } // namespace server

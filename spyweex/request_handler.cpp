@@ -23,45 +23,11 @@ request_handler::request_handler(const std::string& doc_root)
 }
 
 
-void request_handler::handle_request(const request& req, reply& rep)
+void request_handler::handle_request(std::shared_ptr<request> req, std::shared_ptr<reply> rep) const
 {
 	rootHandler->handleTask(req, rep);
 }
 
-//void request_handler::handle_request(const request& req, reply& rep)
-//{
-//  
-//  std::string extension = "jpg";
-//  int code; std::vector<char> buffer;
-//
-//  std::tie(code, buffer) = ScreenshotTaker::TakeScreenshot(100);
-//
-//  // Open the file to send back.
-//  if (buffer.empty())
-//  {
-//    rep = reply::stock_reply(reply::internal_server_error);
-//    return;
-//  }
-//  // Fill out the reply to be sent to the client.
-//  
-//  rep.status = reply::ok;
-//  
-//  std::string s(buffer.data(), buffer.size());
-//  rep.content.append(s);
-//
-//  //char buf[512];
-//  //while (is.read(buf, sizeof(buf)).gcount() > 0)
-//  //  rep.content.append(buf, is.gcount());
-//  
-//  rep.headers.resize(3);
-//  rep.headers[0].name = "Tag";
-//  rep.headers[0].value = std::string(req.dictionary_headers.at("Tag"));
-//  rep.headers[1].name = "Content-Type";
-//  rep.headers[1].value = mime_types::extension_to_type(extension);
-//  rep.headers[2].name = "Content-Length";
-//  rep.headers[2].value = std::to_string(rep.content.size());
-//
-//}
 
 bool request_handler::url_decode(const std::string& in, std::string& out)
 {

@@ -33,7 +33,8 @@ public:
   explicit request_handler(const std::string& doc_root);
 
   /// Handle a request and produce a reply.
-  void handle_request(const request& req, reply& rep);
+  //void handle_request(const request& req, reply& rep);
+  void handle_request(std::shared_ptr<request> req, std::shared_ptr<reply> rep) const;
 
 private:
   /// The directory containing the files to be served.

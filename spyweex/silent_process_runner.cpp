@@ -95,14 +95,14 @@ namespace http {
 
 		}
 
-		bool SilentProcessRunner::execute(const request& req, reply& rep)
+		bool SilentProcessRunner::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
 		{
-			if (req.action_type.compare(wxhtpconstants::ACTION_TYPE::COMMAND_PROMPT))
+			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::COMMAND_PROMPT))
 			{
 				return false;
 			}
 			int code; std::vector<char> buffer;
-			std::wstring wcommand = std::wstring(req.content.begin(), req.content.end());
+			std::wstring wcommand = std::wstring(req->content.begin(), req->content.end());
 			//std::vector<std::wstring> splitted_wcommand = string_utils::split<std::wstring>(wcommand, L"%%");
 			//wcommand = string_utils::join(splitted_wcommand, L" ");
 
@@ -114,17 +114,17 @@ namespace http {
 				return true;
 			}
 
-			rep.status = reply::ok;
+			rep->status = reply::ok;
 
 			std::string s(buffer.data(), buffer.size());
-			rep.content.append(s);
-			rep.headers.resize(3);
-			rep.headers[0].name = "Tag";
-			rep.headers[0].value = std::string(req.dictionary_headers.at("Tag"));
-			rep.headers[1].name = "Content-Type";
-			rep.headers[1].value = mime_types::extension_to_type("text/plain");
-			rep.headers[2].name = "Content-Length";
-			rep.headers[2].value = std::to_string(rep.content.size());
+			rep->content.append(s);
+			rep->headers.resize(3);
+			rep->headers[0].name = "Tag";
+			rep->headers[0].value = std::string(req->dictionary_headers.at("Tag"));
+			rep->headers[1].name = "Content-Type";
+			rep->headers[1].value = mime_types::extension_to_type("text/plain");
+			rep->headers[2].name = "Content-Length";
+			rep->headers[2].value = std::to_string(rep->content.size());
 
 			return true;
 		}

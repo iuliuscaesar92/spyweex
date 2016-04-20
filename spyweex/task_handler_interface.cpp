@@ -4,7 +4,7 @@
 
 namespace http {
 	namespace server {
-		void TaskHandlerInterface::handleTask(const request& req, reply& rep)
+		void TaskHandlerInterface::handleTask(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
 		{
 			if (!execute(req, rep) && next)
 			{

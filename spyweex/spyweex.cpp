@@ -55,6 +55,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
+
 	//try
 	//{
 	// Initialise the server.

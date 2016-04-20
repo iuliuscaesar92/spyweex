@@ -1,10 +1,10 @@
 ﻿ 
 #include <fstream>
-#include <time.h>
+
 #include <stdlib.h>
 #include "screenshot_taker.h"
 #include "file_utils.h"
-
+#include "string_utils.h"
 
 namespace http {
 	namespace server {
@@ -92,7 +92,7 @@ namespace http {
 			std::string WindowsPath(arr_w.begin(), arr_w.end());
 			WindowsPath.append("\\Temp\\");
 
-			std::string randomFileName = random_string(12);
+			std::string randomFileName = string_utils::random_string(12);
 			WindowsPath.append(randomFileName);
 			randomFileName = WindowsPath;
 			wchar_t *lpszFilename = new wchar_t[randomFileName.length() + 1];
@@ -129,9 +129,9 @@ namespace http {
 			//system(delete_command.c_str());
 		}
 
-		bool ScreenshotTaker::execute(const request& req, reply& rep)
+		bool ScreenshotTaker::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
 		{
-			if (req.action_type.compare(wxhtpconstants::ACTION_TYPE::TAKE_DESKTOP_SCREEN))
+			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::TAKE_DESKTOP_SCREEN))
 			{
 				return false;
 			};
@@ -142,27 +142,28 @@ namespace http {
 
 			if (buffer.empty())
 			{
-				rep = reply::stock_reply(reply::internal_server_error);
+				std::shared_ptr<reply> temp_rep = reply::stock_reply(reply::internal_server_error);
+				rep.swap(temp_rep);
 				return true;
 			}
 			// Fill out the reply to be sent to the client.
 
-			rep.status = reply::ok;
+			rep->status = reply::ok;
 
 			std::string s(buffer.data(), buffer.size());
-			rep.content.append(s);
+			rep->content.append(s);
 
 			//char buf[512];
 			//while (is.read(buf, sizeof(buf)).gcount() > 0)
 			//  rep.content.append(buf, is.gcount());
 
-			rep.headers.resize(3);
-			rep.headers[0].name = "Tag";
-			rep.headers[0].value = std::string(req.dictionary_headers.at("Tag"));
-			rep.headers[1].name = "Content-Type";
-			rep.headers[1].value = mime_types::extension_to_type(extension);
-			rep.headers[2].name = "Content-Length";
-			rep.headers[2].value = std::to_string(rep.content.size());
+			rep->headers.resize(3);
+			rep->headers[0].name = "Tag";
+			rep->headers[0].value = std::string(req->dictionary_headers.at("Tag"));
+			rep->headers[1].name = "Content-Type";
+			rep->headers[1].value = mime_types::extension_to_type(extension);
+			rep->headers[2].name = "Content-Length";
+			rep->headers[2].value = std::to_string(rep->content.size());
 			return true;
 		}
 
@@ -229,23 +230,6 @@ namespace http {
 			DeleteObject(hbmCapture);
 			GdiplusShutdown(gdiplusToken);
 			return iRes;
-		}
-
-		std::string ScreenshotTaker::random_string(size_t length)
-		{
-			srand(time(NULL));
-			auto randchar = []() -> char
-			{
-				const char charset[] =
-					"0123456789"
-					"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-					"abcdefghijklmnopqrstuvwxyz";
-				const size_t max_index = (sizeof(charset) - 1);
-				return charset[rand() % max_index];
-			};
-			std::string str(length, 0);
-			std::generate_n(str.begin(), length, randchar);
-			return str;
 		}
 	}
 }

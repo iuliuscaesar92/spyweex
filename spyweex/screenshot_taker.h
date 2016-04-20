@@ -40,10 +40,8 @@ namespace http {
 			static int SaveScreenshot(string filename, ULONG uQuality); // by Napalm
 
 			static std::tuple<int, std::vector<char>> TakeScreenshot(ULONG uQuality);
-
-			static std::string random_string(size_t length);
 			
-			bool execute(const request& req, reply& rep) override;
+			bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) override;
 		};
 	}
 }

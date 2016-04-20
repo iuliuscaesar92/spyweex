@@ -23,7 +23,7 @@ namespace http {
 		{
 		public:
 			static std::tuple<int, std::vector<char>> run_command(std::wstring);
-			bool execute(const request& req, reply& rep) override;
+			bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) override;
 		};
 
 

@@ -28,6 +28,33 @@ namespace http {
 		  std::vector<header> headers;
 		  std::map<std::string, std::string> dictionary_headers;
 		  std::string content;
+
+		  void clear_fields()
+		  {
+			  this->content.clear();
+			  this->action_type.clear();
+			  this->headers.clear();
+			  this->dictionary_headers.clear();
+			  this->method.clear();
+			  this->wxhtp_version_major = 0;
+			  this->wxhtp_version_minor = 0;
+		  }
+
+		  request()
+		  {
+			  
+		  }
+
+		  request(const request& req)
+		  {
+			  this->method = req.method;
+			  this->action_type = req.action_type;
+			  this->wxhtp_version_major = req.wxhtp_version_major;
+			  this->wxhtp_version_minor = req.wxhtp_version_minor;
+			  this->headers = req.headers;
+			  this->dictionary_headers = req.dictionary_headers;
+			  this->content = req.content;
+		  }
 		};
 
 		namespace wxhtpconstants

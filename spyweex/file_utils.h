@@ -5,6 +5,7 @@
 
 #include "AccCtrl.h"
 #include "Aclapi.h"
+#include <string>
 
 namespace http
 {
@@ -13,6 +14,9 @@ namespace http
 		namespace file_utils
 		{
 			HANDLE CreateFileWithAllPermissions(wchar_t *);
+
+			wchar_t * make_temp_file_path();
+
 		}
 	}
 }
