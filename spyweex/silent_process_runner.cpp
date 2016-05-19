@@ -3,9 +3,13 @@
 #include "silent_process_runner.h"
 #include "file_utils.h"
 #include "string_utils.h"
+#include "reply.hpp"
+
 #include <tchar.h>
 
 #include <windows.h>
+
+
 
 namespace http {
 	namespace server {
@@ -114,7 +118,8 @@ namespace http {
 				return true;
 			}
 
-			rep->status = reply::ok;
+			rep->status_line = http::server::status_strings::ok;
+			rep->status_line.append(" ").append(req->action_type).append("\r\n");
 
 			std::string s(buffer.data(), buffer.size());
 			rep->content.append(s);

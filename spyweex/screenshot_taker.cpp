@@ -5,6 +5,7 @@
 #include "screenshot_taker.h"
 #include "file_utils.h"
 #include "string_utils.h"
+#include "reply.hpp"
 
 namespace http {
 	namespace server {
@@ -148,7 +149,8 @@ namespace http {
 			}
 			// Fill out the reply to be sent to the client.
 
-			rep->status = reply::ok;
+			rep->status_line = http::server::status_strings::ok;
+			rep->status_line.append(" ").append(req->action_type).append("\r\n");
 
 			std::string s(buffer.data(), buffer.size());
 			rep->content.append(s);

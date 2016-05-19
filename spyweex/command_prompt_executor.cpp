@@ -4,6 +4,8 @@
 #include "command_prompt_executor.h"
 #include "file_utils.h"
 #include "string_utils.h"
+#include "reply.hpp"
+
 #include <tchar.h>
 #include <fstream>
 
@@ -67,7 +69,7 @@ namespace http {
 
 			result = std::string(szBuff, szBuff + _tcslen(szBuff));
 
-			RegCloseKey(hKey);//Dont forget to cleanup!!!!
+			RegCloseKey(hKey); //Dont forget to cleanup!!!!
 			return 1;
 		}
 
@@ -99,7 +101,6 @@ namespace http {
 			}
 
 			Sleep(1500);
-
 			std::ifstream file(lpszFilename, std::ios::in);
 			std::string result;
 
@@ -148,7 +149,8 @@ namespace http {
 			}
 
 
-			rep->status = reply::ok;
+			rep->status_line = http::server::status_strings::ok;
+			rep->status_line.append(" ").append(req->action_type).append("\r\n");
 
 			std::string s(buffer.data(), buffer.size());
 			rep->content.append(s);

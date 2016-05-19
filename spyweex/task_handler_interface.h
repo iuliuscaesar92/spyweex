@@ -14,6 +14,7 @@ namespace http {
 
 		public:
 			virtual bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) = 0;
+
 			virtual ~TaskHandlerInterface() {}
 
 			void handleTask(std::shared_ptr<request> req, std::shared_ptr<reply> rep);

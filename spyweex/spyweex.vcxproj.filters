@@ -75,6 +75,9 @@
     <ClInclude Include="silent_process_runner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="victim_info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="spyweex.cpp">
@@ -117,6 +120,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="silent_process_runner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="victim_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

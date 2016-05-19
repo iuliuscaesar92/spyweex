@@ -4,11 +4,15 @@
 #pragma once
 
 #include "targetver.h"
-#define WIN32_LEAN_AND_MEAN  
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
+#include <locale.h>
 #include <windows.h>
 
 #include "spyweex.h"
@@ -38,6 +42,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+	char *locale;
+
+	locale = setlocale(LC_ALL, "");
+
 	nCmdShow = 0;
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
