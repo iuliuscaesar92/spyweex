@@ -30,13 +30,14 @@ namespace http {
 			WindowsPath.append("\\Temp\\");
 
 			std::string randomFileName = string_utils::random_string(12);
+			randomFileName.append(".jpg");
 			WindowsPath.append(randomFileName);
 			randomFileName = WindowsPath;
 			wchar_t *lpszFilename = new wchar_t[randomFileName.length() + 1];
 			mbstowcs(lpszFilename, randomFileName.c_str(), randomFileName.length() + 1);
 
-			HANDLE fHandle = file_utils::CreateFileWithAllPermissions(lpszFilename);
-			CloseHandle(fHandle);
+			//HANDLE fHandle = file_utils::CreateFileWithAllPermissions(lpszFilename);
+			//CloseHandle(fHandle);
 
 			iRes = imwrite(randomFileName, cameraFrame, params);
 			/*stream1.release();*/

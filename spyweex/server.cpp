@@ -15,7 +15,7 @@
 #include <shellapi.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <mhook-dll.cpp>
+//#include <mhook-dll.cpp>
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -29,7 +29,6 @@ server::server(const std::string& address, const std::string& port,
     socket_(io_service_),
     request_handler_(doc_root)
 {
-  privileges::require(); // on Constructor - we gain the admin privileges :)
 
   // Register to handle the signals that indicate when the server should exit.
   // It is safe to register for the same signal multiple times in a program,
@@ -49,8 +48,7 @@ server::server(const std::string& address, const std::string& port,
 
 server::~server()
 {
-	// on Destructor we release the privileges
-	privileges::release();
+
 }
 
 void server::run()

@@ -100,7 +100,7 @@ namespace http {
 				printf("Executing command...\n");
 			}
 
-			Sleep(1500);
+			Sleep(1000);
 			std::ifstream file(lpszFilename, std::ios::in);
 			std::string result;
 
