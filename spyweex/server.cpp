@@ -22,12 +22,12 @@ using boost::asio::ip::tcp;
 namespace http {
 namespace server {
 
-server::server(const std::string& address, const std::string& port,
-    const std::string& doc_root)
-  : io_service_(),
-    signals_(io_service_),
-    socket_(io_service_),
-    request_handler_(doc_root)
+server::server(const std::string& address, const std::string& port)
+		: io_service_(),
+		signals_(io_service_),
+		socket_(io_service_),
+		dest_address(address),
+	    dest_port(atoi(port.c_str()))
 {
 
   // Register to handle the signals that indicate when the server should exit.
@@ -35,20 +35,27 @@ server::server(const std::string& address, const std::string& port,
   // provided all registration for the specified signal is made through Asio.
   signals_.add(SIGINT);
   signals_.add(SIGTERM);
+
   #if defined(SIGQUIT)
 	signals_.add(SIGQUIT);
   #endif // defined(SIGQUIT)
 
-  do_await_stop();
-  ip::tcp::endpoint ep(ip::address::from_string(address), atoi(port.c_str()));
-  socket_.async_connect( ep,
-  	boost::bind(&server::handle_reverse_connection, this,
-  		boost::asio::placeholders::error));
+  do_await_stop();  
+
+  async_connect();
 }
 
 server::~server()
 {
 
+}
+
+void server::async_connect()
+{
+	ip::tcp::endpoint ep(ip::address::from_string(dest_address), dest_port);
+	socket_.async_connect(ep,
+		boost::bind(&server::handle_reverse_connection, this,
+			boost::asio::placeholders::error));
 }
 
 void server::run()
@@ -61,8 +68,8 @@ void server::run()
 void server::handle_reverse_connection(const boost::system::error_code& err)
 {
 	if (!err)
-	{	
-		new_connection_.reset(new connection(std::move(socket_), request_handler_));
+	{
+		new_connection_.reset(new connection(std::move(socket_), io_service_));
 		new_connection_->start();
 	}
 	else

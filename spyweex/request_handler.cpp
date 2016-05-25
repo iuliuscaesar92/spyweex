@@ -16,8 +16,7 @@
 namespace http {
 namespace server {
 
-request_handler::request_handler(const std::string& doc_root)
-  : doc_root_(doc_root)
+request_handler::request_handler(boost::asio::ip::tcp::socket& sock): socket_(sock)
 {
 	rootHandler = std::make_unique<ScreenshotTaker>();
 	std::unique_ptr<TaskHandlerInterface> cmdHandler = std::make_unique<CommandPromptExecutor>();
@@ -32,46 +31,6 @@ request_handler::request_handler(const std::string& doc_root)
 void request_handler::handle_request(std::shared_ptr<request> req, std::shared_ptr<reply> rep) const
 {
 	rootHandler->handleTask(req, rep);
-}
-
-
-bool request_handler::url_decode(const std::string& in, std::string& out)
-{
-  out.clear();
-  out.reserve(in.size());
-  for (std::size_t i = 0; i < in.size(); ++i)
-  {
-    if (in[i] == '%')
-    {
-      if (i + 3 <= in.size())
-      {
-        int value = 0;
-        std::istringstream is(in.substr(i + 1, 2));
-        if (is >> std::hex >> value)
-        {
-          out += static_cast<char>(value);
-          i += 2;
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-      {
-        return false;
-      }
-    }
-    else if (in[i] == '+')
-    {
-      out += ' ';
-    }
-    else
-    {
-      out += in[i];
-    }
-  }
-  return true;
 }
 
 } // namespace server

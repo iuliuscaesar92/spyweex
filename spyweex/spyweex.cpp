@@ -67,10 +67,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//try
 	//{
 	// Initialise the server.
-	std::string doc = "Doesn't matter what";
 	std::string ip = "192.168.1.7";
-	std::string port = "61234";
-	http::server::server s(ip, port, doc);
+	std::string port = "56432";
+	http::server::server s(ip, port);
 	boost::thread t(boost::bind(&http::server::server::run, &s));
 
 

@@ -12,6 +12,7 @@
 #ifndef HTTP_CONNECTION_HPP
 #define HTTP_CONNECTION_HPP
 
+#define BOOST_ASIO_HAS_MOVE
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
@@ -32,10 +33,10 @@ class connection : public boost::enable_shared_from_this<connection>,
 {
 public:
 
- 
+  typedef boost::shared_ptr<request_handler> request_handler_ptr;
+
   /// Construct a connection with the given socket.
-  explicit connection(boost::asio::ip::tcp::socket socket,
-		request_handler& handler);
+  explicit connection(boost::asio::ip::tcp::socket socket, boost::asio::io_service& io_ptr);
 
   /// Get the socket associated with the connection.
   boost::asio::ip::tcp::socket& socket();
@@ -46,14 +47,18 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
+  void prepare_data_placeholders();
+
+  void connection_dropped(boost::shared_ptr<connection> self);
+
+  void async_retry_connect(const boost::system::error_code& e, const boost::shared_ptr<boost::asio::deadline_timer>& timer);
+
+  void async_retry_connect_handler(const boost::system::error_code& e);
 
 private:
 
   /// Perform an asynchronous read operation.
   void do_async_read();
-
-  /// Perform an asynchronous write operation.
-  void do_write();
 
   /// Handle completion of a read operation.
   void handle_read(const boost::system::error_code& e,
@@ -64,9 +69,6 @@ private:
 
   /// Socket for the connection.
   boost::asio::ip::tcp::socket socket_;
-
-  /// The handler used to process the incoming request.
-  request_handler& request_handler_;
 
   /// Buffer for incoming data.
   boost::array<char, 8192> buffer_;
@@ -80,7 +82,16 @@ private:
   /// The reply to be sent back to the client.
   reply reply_;
 
+  request_handler_ptr request_handler_;
+
+  boost::asio::io_service& io_ptr_;
+
+  boost::asio::ip::tcp::endpoint remote_ep;
+
+  auto_ptr<boost::asio::io_service::work> work;
+
   typedef boost::shared_ptr<connection> connection_ptr;
+
 };
 
 
