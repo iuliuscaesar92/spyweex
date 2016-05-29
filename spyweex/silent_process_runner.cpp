@@ -14,6 +14,12 @@
 namespace http {
 	namespace server {
 
+		SilentProcessRunner::SilentProcessRunner(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref):
+			TaskHandlerInterface(sock, io_ref)
+		{
+			operations_queue_ptr = async_op::new_();
+		}
+
 		std::tuple<int, std::vector<char>> SilentProcessRunner::run_command(std::wstring wcommand)
 		{
 			//int iRes;

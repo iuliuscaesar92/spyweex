@@ -5,14 +5,18 @@
 #include "request.hpp"
 #include "reply.hpp"
 #include <memory>
+#include "async_operation.hpp"
+
 namespace http {
 	namespace server {
 		class TaskHandlerInterface
-		{
-			
+		{		
 			std::unique_ptr<TaskHandlerInterface> next;
 
 		public:
+			explicit TaskHandlerInterface(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref):
+				socket_(sock), io_ref_(io_ref) {}
+
 			virtual bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) = 0;
 
 			virtual ~TaskHandlerInterface() {}
@@ -20,6 +24,13 @@ namespace http {
 			void handleTask(std::shared_ptr<request> req, std::shared_ptr<reply> rep);
 
 			void setNextTask(std::unique_ptr<TaskHandlerInterface>&& nextElement);
+
+			boost::asio::ip::tcp::socket& socket_;
+
+			boost::asio::io_service& io_ref_;
+
+			boost::shared_ptr<async_op> operations_queue_ptr;
+
 		};
 	}
 }

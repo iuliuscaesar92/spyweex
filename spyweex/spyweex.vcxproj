@@ -161,10 +161,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app_error_category.hpp" />
+    <ClInclude Include="async_operation.hpp" />
     <ClInclude Include="command_prompt_executor.h" />
     <ClInclude Include="connection.hpp" />
     <ClInclude Include="file_utils.h" />
     <ClInclude Include="header.hpp" />
+    <ClInclude Include="keyboard_logger.hpp" />
     <ClInclude Include="mime_types.hpp" />
     <ClInclude Include="reply.hpp" />
     <ClInclude Include="request.hpp" />
@@ -183,9 +186,11 @@
     <ClInclude Include="win_wrapper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="async_operation.cpp" />
     <ClCompile Include="command_prompt_executor.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="file_utils.cpp" />
+    <ClCompile Include="keyboard_logger.cpp" />
     <ClCompile Include="mime_types.cpp" />
     <ClCompile Include="privileges.c" />
     <ClCompile Include="reply.cpp" />

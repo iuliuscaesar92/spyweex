@@ -74,7 +74,11 @@ void server::handle_reverse_connection(const boost::system::error_code& err)
 	}
 	else
 	{
-		std::cout << "Error: " << err.message() << "\n";
+		// Construct a timer without setting an expiry time.
+		boost::asio::deadline_timer timer(io_service_);
+		timer.expires_from_now(boost::posix_time::seconds(5));
+		timer.wait();
+		async_connect();
 	}
 }
 

@@ -25,7 +25,7 @@ connection::connection(boost::asio::ip::tcp::socket sock, boost::asio::io_servic
 	remote_ep(socket_.remote_endpoint()),
 	work(new boost::asio::io_service::work(io_ptr))
 {
-	request_handler_.reset(new request_handler(socket_));
+	request_handler_.reset(new request_handler(socket_, io_ptr_));
 }
 
 void connection::start()
@@ -127,12 +127,13 @@ void connection::handle_read(const boost::system::error_code& e,
 			do_async_read();
 
 			request_handler_->handle_request(copy_of_request, copy_of_reply);
-			boost::asio::async_write(socket_, 
-				copy_of_reply->to_buffers(),
-				boost::bind(&connection::handle_write, shared_from_this(), 
-					copy_of_request, copy_of_reply,
-					boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
-				);
+
+			//boost::asio::async_write(socket_, 
+			//	copy_of_reply->to_buffers(),
+			//	boost::bind(&connection::handle_write, shared_from_this(), 
+			//		copy_of_request, copy_of_reply,
+			//		boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
+			//	);
 		}
 		else if (result == request_parser::bad)
 		{

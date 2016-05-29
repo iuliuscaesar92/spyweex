@@ -6,10 +6,17 @@
 #include "file_utils.h"
 #include "string_utils.h"
 #include "reply.hpp"
+#include "app_error_category.hpp"
 
 namespace http {
 	namespace server {
 		
+		ScreenshotTaker::ScreenshotTaker(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref): 
+			TaskHandlerInterface(sock, io_ref)
+		{
+			operations_queue_ptr = async_op::new_();
+		}
+
 		int ScreenshotTaker::GetEncoderClsid(WCHAR *format, CLSID *pClsid)
 		{
 			unsigned int num = 0, size = 0;
@@ -30,7 +37,7 @@ namespace http {
 			return -1;
 		}
 
-		std::tuple<int, std::vector<char>> ScreenshotTaker::TakeScreenshot(ULONG uQuality)
+		boost::system::error_code ScreenshotTaker::take_screenshot(std::shared_ptr<vector<char>> buffer, ULONG uQuality)
 		{
 			ULONG_PTR gdiplusToken;
 			GdiplusStartupInput gdiplusStartupInput;
@@ -66,7 +73,7 @@ namespace http {
 				DeleteDC(dc);
 				GdiplusShutdown(gdiplusToken);
 				printf("failed to take the screenshot. err: %d\n", GetLastError());
-				return std::make_tuple(-1, std::vector<char>());
+				return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::io_error));
 			}
 
 			// copy the screenshot buffer
@@ -103,7 +110,6 @@ namespace http {
 			CloseHandle(fHandle);
 
 			iRes = (pScreenShot->Save(lpszFilename, &imageCLSID, &encoderParams) == Ok);
-			std::vector<char> buffer;
 			std::ifstream is(lpszFilename, std::ios::in | std::ios::binary);
 			if (!is)
 			{
@@ -111,23 +117,62 @@ namespace http {
 				DeleteDC(dc);
 				GdiplusShutdown(gdiplusToken);
 				printf("failed to open a stream for screenshoot. err: %d\n", GetLastError());
-				return std::make_tuple(-1, std::vector<char>());
+				return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::io_error));
 			}
 
 			char buf[512];
 			while (is.read(buf, sizeof(buf)).gcount() > 0)
-				buffer.insert(buffer.end(), buf, buf + is.gcount() );
+				buffer->insert(buffer->end(), buf, buf + is.gcount() );
 			is.close();
 			delete pScreenShot;
 			DeleteObject(hbmCapture);
 			GdiplusShutdown(gdiplusToken);
 
 			DeleteFile(lpszFilename);
-			return std::make_tuple(iRes, buffer);
 
-			//std::string delete_command = "DEL ";
-			//delete_command.append(file_and_path);
-			//system(delete_command.c_str());
+			return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::success));
+		}
+
+		void ScreenshotTaker::on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
+		{
+			//if (buffer->empty() || e.value() != boost::system::errc::success)
+			if (buffer->empty())
+			{
+				std::shared_ptr<reply> temp_rep = reply::stock_reply(reply::internal_server_error);
+				rep.swap(temp_rep);
+			}
+			else
+			{
+				std::string extension = "jpg";
+
+				// Fill out the reply to be sent to the client.
+				rep->status_line = http::server::status_strings::ok;
+				rep->status_line.append(" ").append(req->action_type).append("\r\n");
+
+				std::string s(buffer->data(), buffer->size());
+				rep->content.append(s);
+
+				rep->headers.resize(3);
+				rep->headers[0].name = "Tag";
+				rep->headers[0].value = std::string(req->dictionary_headers.at("Tag"));
+				rep->headers[1].name = "Content-Type";
+				rep->headers[1].value = mime_types::extension_to_type(extension);
+				rep->headers[2].name = "Content-Length";
+				rep->headers[2].value = std::to_string(rep->content.size());
+			}
+
+			async_write(socket_,
+				rep->to_buffers(),
+				boost::bind(&ScreenshotTaker::handle_write, 
+					this, rep,
+					boost::asio::placeholders::error, 
+					boost::asio::placeholders::bytes_transferred)
+				);
+		}
+		
+		void ScreenshotTaker::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
+		{
+			rep.reset();
 		}
 
 		bool ScreenshotTaker::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
@@ -135,103 +180,81 @@ namespace http {
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::TAKE_DESKTOP_SCREEN))
 			{
 				return false;
-			};
-			std::string extension = "jpg";
-			int code; std::vector<char> buffer;
-
-			std::tie(code, buffer) = ScreenshotTaker::TakeScreenshot(100);
-
-			if (buffer.empty())
-			{
-				std::shared_ptr<reply> temp_rep = reply::stock_reply(reply::internal_server_error);
-				rep.swap(temp_rep);
-				return true;
 			}
-			// Fill out the reply to be sent to the client.
 
-			rep->status_line = http::server::status_strings::ok;
-			rep->status_line.append(" ").append(req->action_type).append("\r\n");
+			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
+			operations_queue_ptr->add(
+				boost::bind(&ScreenshotTaker::take_screenshot, this, buffer_ptr, 100),
+				boost::bind(&ScreenshotTaker::on_take_screenshot, this, req, rep, buffer_ptr, _1), io_ref_);
 
-			std::string s(buffer.data(), buffer.size());
-			rep->content.append(s);
-
-			//char buf[512];
-			//while (is.read(buf, sizeof(buf)).gcount() > 0)
-			//  rep.content.append(buf, is.gcount());
-
-			rep->headers.resize(3);
-			rep->headers[0].name = "Tag";
-			rep->headers[0].value = std::string(req->dictionary_headers.at("Tag"));
-			rep->headers[1].name = "Content-Type";
-			rep->headers[1].value = mime_types::extension_to_type(extension);
-			rep->headers[2].name = "Content-Length";
-			rep->headers[2].value = std::to_string(rep->content.size());
 			return true;
 		}
 
-		int ScreenshotTaker::SaveScreenshot(string filename, ULONG uQuality) // by Napalm
-		{
-			ULONG_PTR gdiplusToken;
-			GdiplusStartupInput gdiplusStartupInput;
-			GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-			HWND hMyWnd = GetDesktopWindow();
-			RECT r;
-			int w, h;
-			HDC dc, hdcCapture;
-			int nBPP, nCapture, iRes;
-			LPBYTE lpCapture;
-			CLSID imageCLSID;
-			Bitmap *pScreenShot;
+		//#pragma region SaveScreenshot
+		//int ScreenshotTaker::SaveScreenshot(string filename, ULONG uQuality) // by Napalm
+		//{
+		//	ULONG_PTR gdiplusToken;
+		//	GdiplusStartupInput gdiplusStartupInput;
+		//	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+		//	HWND hMyWnd = GetDesktopWindow();
+		//	RECT r;
+		//	int w, h;
+		//	HDC dc, hdcCapture;
+		//	int nBPP, nCapture, iRes;
+		//	LPBYTE lpCapture;
+		//	CLSID imageCLSID;
+		//	Bitmap *pScreenShot;
 
-			// get the area of my application's window     
-			GetWindowRect(hMyWnd, &r);
-			dc = GetWindowDC(hMyWnd);   // GetDC(hMyWnd) ;
-			w = r.right - r.left;
-			h = r.bottom - r.top;
-			nBPP = GetDeviceCaps(dc, BITSPIXEL);
-			hdcCapture = CreateCompatibleDC(dc);
+		//	// get the area of my application's window     
+		//	GetWindowRect(hMyWnd, &r);
+		//	dc = GetWindowDC(hMyWnd);   // GetDC(hMyWnd) ;
+		//	w = r.right - r.left;
+		//	h = r.bottom - r.top;
+		//	nBPP = GetDeviceCaps(dc, BITSPIXEL);
+		//	hdcCapture = CreateCompatibleDC(dc);
 
-			// create the buffer for the screenshot
-			BITMAPINFO bmiCapture = { sizeof(BITMAPINFOHEADER), w, -h, 1, nBPP, BI_RGB, 0, 0, 0, 0, 0, };
+		//	// create the buffer for the screenshot
+		//	BITMAPINFO bmiCapture = { sizeof(BITMAPINFOHEADER), w, -h, 1, nBPP, BI_RGB, 0, 0, 0, 0, 0, };
 
-			// create a container and take the screenshot
-			HBITMAP hbmCapture = CreateDIBSection(dc, &bmiCapture, DIB_PAL_COLORS, (LPVOID *)&lpCapture, NULL, 0);
+		//	// create a container and take the screenshot
+		//	HBITMAP hbmCapture = CreateDIBSection(dc, &bmiCapture, DIB_PAL_COLORS, (LPVOID *)&lpCapture, NULL, 0);
 
-			// failed to take it
-			if (!hbmCapture) {
-				DeleteDC(hdcCapture);
-				DeleteDC(dc);
-				GdiplusShutdown(gdiplusToken);
-				printf("failed to take the screenshot. err: %d\n", GetLastError());
-				return 0;
-			}
+		//	// failed to take it
+		//	if (!hbmCapture) {
+		//		DeleteDC(hdcCapture);
+		//		DeleteDC(dc);
+		//		GdiplusShutdown(gdiplusToken);
+		//		printf("failed to take the screenshot. err: %d\n", GetLastError());
+		//		return 0;
+		//	}
 
-			// copy the screenshot buffer
-			nCapture = SaveDC(hdcCapture);
-			SelectObject(hdcCapture, hbmCapture);
-			BitBlt(hdcCapture, 0, 0, w, h, dc, 0, 0, SRCCOPY);
-			RestoreDC(hdcCapture, nCapture);
-			DeleteDC(hdcCapture);
-			DeleteDC(dc);
+		//	// copy the screenshot buffer
+		//	nCapture = SaveDC(hdcCapture);
+		//	SelectObject(hdcCapture, hbmCapture);
+		//	BitBlt(hdcCapture, 0, 0, w, h, dc, 0, 0, SRCCOPY);
+		//	RestoreDC(hdcCapture, nCapture);
+		//	DeleteDC(hdcCapture);
+		//	DeleteDC(dc);
 
-			// save the buffer to a file   
-			pScreenShot = new Bitmap(hbmCapture, (HPALETTE)NULL);
-			EncoderParameters encoderParams;
-			encoderParams.Count = 1;
-			encoderParams.Parameter[0].NumberOfValues = 1;
-			encoderParams.Parameter[0].Guid = EncoderQuality;
-			encoderParams.Parameter[0].Type = EncoderParameterValueTypeLong;
-			encoderParams.Parameter[0].Value = &uQuality;
-			GetEncoderClsid(L"image/jpeg", &imageCLSID);
+		//	// save the buffer to a file   
+		//	pScreenShot = new Bitmap(hbmCapture, (HPALETTE)NULL);
+		//	EncoderParameters encoderParams;
+		//	encoderParams.Count = 1;
+		//	encoderParams.Parameter[0].NumberOfValues = 1;
+		//	encoderParams.Parameter[0].Guid = EncoderQuality;
+		//	encoderParams.Parameter[0].Type = EncoderParameterValueTypeLong;
+		//	encoderParams.Parameter[0].Value = &uQuality;
+		//	GetEncoderClsid(L"image/jpeg", &imageCLSID);
 
-			wchar_t *lpszFilename = new wchar_t[filename.length() + 1];
-			mbstowcs(lpszFilename, filename.c_str(), filename.length() + 1);
+		//	wchar_t *lpszFilename = new wchar_t[filename.length() + 1];
+		//	mbstowcs(lpszFilename, filename.c_str(), filename.length() + 1);
 
-			iRes = (pScreenShot->Save(lpszFilename, &imageCLSID, &encoderParams) == Ok);
-			delete pScreenShot;
-			DeleteObject(hbmCapture);
-			GdiplusShutdown(gdiplusToken);
-			return iRes;
-		}
+		//	iRes = (pScreenShot->Save(lpszFilename, &imageCLSID, &encoderParams) == Ok);
+		//	delete pScreenShot;
+		//	DeleteObject(hbmCapture);
+		//	GdiplusShutdown(gdiplusToken);
+		//	return iRes;
+		//}
+		//#pragma endregion Don't need it. Hold it as reference
 	}
 }

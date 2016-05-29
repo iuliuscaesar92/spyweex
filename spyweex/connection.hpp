@@ -12,7 +12,6 @@
 #ifndef HTTP_CONNECTION_HPP
 #define HTTP_CONNECTION_HPP
 
-#define BOOST_ASIO_HAS_MOVE
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
@@ -26,6 +25,8 @@
 
 namespace http {
 namespace server {
+
+class request_handler;
 
 /// Represents a single connection from a client.
 class connection : public boost::enable_shared_from_this<connection>,

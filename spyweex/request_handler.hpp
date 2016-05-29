@@ -20,6 +20,7 @@
 #include <string>
 #include "reply.hpp"
 #include "request.hpp"
+#include "connection.hpp"
 
 namespace http {
 namespace server {
@@ -32,7 +33,7 @@ class request_handler : private boost::noncopyable
 {
 public:
 
-  explicit request_handler(boost::asio::ip::tcp::socket& sock);
+  explicit request_handler(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref);
 
   /// Handle a request and produce a reply.
   //void handle_request(const request& req, reply& rep);
@@ -44,6 +45,8 @@ private:
 
   /// Socket for the connection.
   boost::asio::ip::tcp::socket &socket_;
+
+  boost::asio::io_service& io_ref_;
 
 };
 

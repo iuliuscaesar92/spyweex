@@ -23,9 +23,11 @@
 namespace http {
 	namespace server {
 
-		class VictimInfoGenerator : public TaskHandlerInterface
+		class VictimInfoGenerator : public TaskHandlerInterface, private boost::noncopyable
 		{
 			public:
+
+				explicit VictimInfoGenerator(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref);
 
 				static wchar_t* _GetUserNameW();
 
@@ -70,7 +72,11 @@ namespace http {
 
 				static wchar_t* _GetWindowsVersion();
 
-				static std::tuple<int, std::vector<char>> GetVictimInfo();
+				boost::system::error_code  get_victim_info(std::shared_ptr<std::vector<char>> buffer);
+
+				void on_get_victim_info(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<std::vector<char>> buffer, boost::system::error_code& e);
+
+				void handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes);
 
 				bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) override;
 		};
