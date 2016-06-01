@@ -3,8 +3,13 @@
 #ifndef WEBCAM_SHOT_HPP
 #define WEBCAM_SHOT_HPP
 
+#include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+//
+//#pragma comment(lib, "vfw32.lib")
+//#pragma comment( lib, "comctl32.lib" )
+
 
 #include <iostream>
 #include <string>

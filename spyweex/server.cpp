@@ -11,11 +11,9 @@
 #include "server.hpp"
 #include <windows.h>
 #include <signal.h>
-//#include <utility>
 #include <shellapi.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-//#include <mhook-dll.cpp>
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -29,7 +27,6 @@ server::server(const std::string& address, const std::string& port)
 		dest_address(address),
 	    dest_port(atoi(port.c_str()))
 {
-
   // Register to handle the signals that indicate when the server should exit.
   // It is safe to register for the same signal multiple times in a program,
   // provided all registration for the specified signal is made through Asio.

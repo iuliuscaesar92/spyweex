@@ -36,9 +36,9 @@ void connection::start()
   socket_.set_option(kl);
 
   socket_.async_read_some(boost::asio::buffer(buffer_),
-	 boost::bind(&connection::handle_read, shared_from_this(),
-		boost::asio::placeholders::error,
-		boost::asio::placeholders::bytes_transferred));
+	  boost::bind(&connection::handle_read, shared_from_this(),
+		  boost::asio::placeholders::error,
+		  boost::asio::placeholders::bytes_transferred));
 }
 
 void connection::stop()
@@ -64,27 +64,27 @@ void connection::connection_dropped(boost::shared_ptr<connection> self)
 
 void connection::async_retry_connect(const boost::system::error_code& e, const boost::shared_ptr<boost::asio::deadline_timer>& timer)
 {
-	if(!e)
-	{		
-			if(socket_.is_open())
-			{
-				socket_.close();				
-			}
-			boost::system::error_code ec;
-			socket_.open(boost::asio::ip::tcp::v4(), ec);
-			if(!ec)
-				socket_.async_connect(remote_ep,
-					boost::bind(
-						&connection::async_retry_connect_handler,
-						shared_from_this(),
-						boost::asio::placeholders::error
-						));
+	if (!e)
+	{
+		if (socket_.is_open())
+		{
+			socket_.close();
+		}
+		boost::system::error_code ec;
+		socket_.open(boost::asio::ip::tcp::v4(), ec);
+		if (!ec)
+			socket_.async_connect(remote_ep,
+				boost::bind(
+					&connection::async_retry_connect_handler,
+					shared_from_this(),
+					boost::asio::placeholders::error
+					));
 	}
 }
 
 void connection::async_retry_connect_handler(const boost::system::error_code& e)
 {
-	if(!e)
+	if (!e)
 	{
 		this->prepare_data_placeholders();
 		this->start();

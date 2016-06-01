@@ -87,10 +87,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>G:\opencv\build\include;C:\Users\weex9_000\Source\Repos\spyweex-repo\mhook-dll;G:\boost_library\boost_1_60_0\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0603;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>G:\opencv\build\include;G:\boost_library\boost_1_60_0\</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,15 +108,18 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\weex9_000\Source\Repos\spyweex-repo\mhook-dll;G:\boost_library\boost_1_60_0\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_WIN32_WINNT=0x0603;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>G:\opencv\build\include;G:\boost_library\boost_1_60_0\</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>G:\opencv\build\x86\vc14\lib;G:\boost_library\boost_1_60_0\stage\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_highgui2411d.lib;opencv_imgproc2411d.lib;opencv_core2411d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -122,12 +127,13 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>G:\opencv\build\include;C:\Users\weex9_000\Source\Repos\spyweex-repo\mhook-dll;G:\boost_library\boost_1_60_0\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0603;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>G:\opencv\build\include;G:\boost_library\boost_1_60_0\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <CallingConvention>Cdecl</CallingConvention>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -144,11 +150,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -166,6 +173,7 @@
     <ClInclude Include="command_prompt_executor.h" />
     <ClInclude Include="connection.hpp" />
     <ClInclude Include="file_utils.h" />
+    <ClInclude Include="hardware.hpp" />
     <ClInclude Include="header.hpp" />
     <ClInclude Include="keyboard_logger.hpp" />
     <ClInclude Include="mime_types.hpp" />
@@ -181,6 +189,7 @@
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="task_handler_interface.h" />
+    <ClInclude Include="utils.hpp" />
     <ClInclude Include="victim_info.h" />
     <ClInclude Include="webcam_shot.h" />
     <ClInclude Include="win_wrapper.h" />
@@ -190,6 +199,7 @@
     <ClCompile Include="command_prompt_executor.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="file_utils.cpp" />
+    <ClCompile Include="hardware.cpp" />
     <ClCompile Include="keyboard_logger.cpp" />
     <ClCompile Include="mime_types.cpp" />
     <ClCompile Include="privileges.c" />
@@ -201,6 +211,7 @@
     <ClCompile Include="silent_process_runner.cpp" />
     <ClCompile Include="spyweex.cpp" />
     <ClCompile Include="task_handler_interface.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="victim_info.cpp" />
     <ClCompile Include="webcam_shot.cpp" />
   </ItemGroup>
