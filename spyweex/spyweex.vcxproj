@@ -202,7 +202,6 @@
     <ClCompile Include="hardware.cpp" />
     <ClCompile Include="keyboard_logger.cpp" />
     <ClCompile Include="mime_types.cpp" />
-    <ClCompile Include="privileges.c" />
     <ClCompile Include="reply.cpp" />
     <ClCompile Include="request_handler.cpp" />
     <ClCompile Include="request_parser.cpp" />

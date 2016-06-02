@@ -116,9 +116,6 @@
     <ClCompile Include="server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="privileges.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="screenshot_taker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

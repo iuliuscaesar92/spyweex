@@ -31,6 +31,7 @@ void Hardware::endWorking(const std::wstring &time)
 {
 	_isWorking = false;
 	_endTime = time;
+	_lastReport = true;
 }
 
 void Hardware::setActiveWindow(const std::wstring & activeWindowName)
@@ -106,6 +107,11 @@ std::string Hardware::get_timed_report()
 bool Hardware::isWorking() const
 {
 	return _isWorking;
+}
+
+bool Hardware::isLastReport() const
+{
+	return _lastReport;
 }
 
 const std::wstring& Hardware::getLastActiveWindow() const

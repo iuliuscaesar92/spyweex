@@ -30,6 +30,7 @@ public:
 	void log(wchar_t txt);
 
 	bool isWorking()						const;
+	bool isLastReport()						const;
 	const std::wstring& getLastActiveWindow() const;
 	const std::wstring& getStartTime()		const;
 	const std::wstring& getEndTime()		const;

