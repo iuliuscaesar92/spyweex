@@ -50,11 +50,15 @@ public:
 
   void prepare_data_placeholders();
 
-  void connection_dropped(boost::shared_ptr<connection> self);
+  void connection_dropped();
 
-  void async_retry_connect(const boost::system::error_code& e, const boost::shared_ptr<boost::asio::deadline_timer>& timer);
+  void async_retry_connect(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer);
 
   void async_retry_connect_handler(const boost::system::error_code& e);
+
+  void on_strand_completed();
+
+  void dispatch_task(std::shared_ptr<request> copy_of_request);
 
 private:
 
@@ -90,6 +94,8 @@ private:
   boost::asio::ip::tcp::endpoint remote_ep;
 
   auto_ptr<boost::asio::io_service::work> work;
+
+  strand request_handler_strand;
 
   typedef boost::shared_ptr<connection> connection_ptr;
 

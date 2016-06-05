@@ -32,9 +32,9 @@ request_handler::request_handler(boost::asio::ip::tcp::socket& sock, boost::asio
 }
 
 
-void request_handler::handle_request(std::shared_ptr<request> req, std::shared_ptr<reply> rep) const
+void request_handler::handle_request(std::shared_ptr<request> req) const
 {
-	rootHandler->handleTask(req, rep);
+	rootHandler->handleTask(req);
 }
 
 } // namespace server

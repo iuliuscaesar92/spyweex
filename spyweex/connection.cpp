@@ -15,6 +15,7 @@
 #include <boost/move/move.hpp>
 #include "request_handler.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "spyweex.h"
 
 namespace http {
 namespace server {
@@ -23,7 +24,8 @@ connection::connection(boost::asio::ip::tcp::socket sock, boost::asio::io_servic
   : socket_(boost::move(sock)),
 	io_ptr_(io_ptr),
 	remote_ep(socket_.remote_endpoint()),
-	work(new boost::asio::io_service::work(io_ptr))
+	work(new boost::asio::io_service::work(io_ptr)),
+	request_handler_strand(io_ptr)
 {
 	request_handler_.reset(new request_handler(socket_, io_ptr_));
 }
@@ -51,24 +53,26 @@ boost::asio::ip::tcp::socket& connection::socket()
 	return socket_;
 }
 
-void connection::connection_dropped(boost::shared_ptr<connection> self)
+void connection::connection_dropped()
 {
-	const boost::shared_ptr<boost::asio::deadline_timer> t(new boost::asio::deadline_timer(io_ptr_, boost::posix_time::seconds(10)));
+	const boost::shared_ptr<boost::asio::deadline_timer> t(new boost::asio::deadline_timer(io_ptr_));
+	t->expires_from_now(boost::posix_time::seconds(2));
 	t->async_wait(
 		boost::bind(
 			&connection::async_retry_connect,
-			shared_from_this(),
+			this,
 			boost::asio::placeholders::error,
 			t));
 }
 
-void connection::async_retry_connect(const boost::system::error_code& e, const boost::shared_ptr<boost::asio::deadline_timer>& timer)
+void connection::async_retry_connect(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer)
 {
 	if (!e)
 	{
+		timer.reset();
 		if (socket_.is_open())
 		{
-			socket_.close();
+			stop(); // closes all asyncronous operations asociated with socket
 		}
 		boost::system::error_code ec;
 		socket_.open(boost::asio::ip::tcp::v4(), ec);
@@ -76,7 +80,7 @@ void connection::async_retry_connect(const boost::system::error_code& e, const b
 			socket_.async_connect(remote_ep,
 				boost::bind(
 					&connection::async_retry_connect_handler,
-					shared_from_this(),
+					this,
 					boost::asio::placeholders::error
 					));
 	}
@@ -91,7 +95,7 @@ void connection::async_retry_connect_handler(const boost::system::error_code& e)
 	}
 	else
 	{
-		this->connection_dropped(shared_from_this());
+		this->connection_dropped();
 	}
 }
 
@@ -111,6 +115,16 @@ void connection::do_async_read()
 			boost::asio::placeholders::bytes_transferred));
 }
 
+void connection::on_strand_completed()
+{
+	
+}
+
+void connection::dispatch_task(std::shared_ptr<request> copy_of_request)
+{
+	request_handler_->handle_request(copy_of_request);
+}
+
 void connection::handle_read(const boost::system::error_code& e,
 	std::size_t bytes_transferred)
 {
@@ -121,24 +135,17 @@ void connection::handle_read(const boost::system::error_code& e,
 			request_, buffer_.data(), buffer_.data() + bytes_transferred);
 		if (result == request_parser::good)
 		{
-			// make copy of request and reply
-			std::shared_ptr<request> copy_of_request = std::make_shared<request>(request_);
-			std::shared_ptr<reply> copy_of_reply = std::make_shared<reply>(reply_);
+			std::shared_ptr<request> copy_of_request(new request(request_));
+			//request_handler_strand.post(
+			//	boost::bind(&connection::dispatch_task, this, copy_of_request));
+			//request_handler_strand.post(boost::bind(&connection::do_async_read, this));
+			request_handler_->handle_request(copy_of_request);
 			do_async_read();
-
-			request_handler_->handle_request(copy_of_request, copy_of_reply);
-
-			//boost::asio::async_write(socket_, 
-			//	copy_of_reply->to_buffers(),
-			//	boost::bind(&connection::handle_write, shared_from_this(), 
-			//		copy_of_request, copy_of_reply,
-			//		boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
-			//	);
 		}
 		else if (result == request_parser::bad)
 		{
-			std::shared_ptr<request> copy_of_request = std::make_shared<request>(request_);
-			std::shared_ptr<reply> copy_of_reply = std::make_shared<reply>(reply_);
+			std::shared_ptr<request> copy_of_request(new request(request_));
+			std::shared_ptr<reply> copy_of_reply(new reply(reply_));
 			do_async_read();
 			reply_ = *(reply::stock_reply(reply::bad_request).get());
 			boost::asio::async_write(socket_, copy_of_reply->to_buffers(),
@@ -157,7 +164,7 @@ void connection::handle_read(const boost::system::error_code& e,
 	}
 	else if (e == boost::asio::error::eof)
 	{
-		connection_dropped(shared_from_this());
+		connection_dropped();
 	}
 }
 

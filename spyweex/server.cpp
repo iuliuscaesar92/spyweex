@@ -21,7 +21,7 @@ namespace http {
 namespace server {
 
 server::server(const std::string& address, const std::string& port)
-		: io_service_(),
+		:io_service_(),
 		signals_(io_service_),
 		socket_(io_service_),
 		dest_address(address),

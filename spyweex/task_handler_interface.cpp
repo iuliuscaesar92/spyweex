@@ -1,14 +1,15 @@
 
 
 #include "task_handler_interface.h"
+#include "server.hpp"
 
 namespace http {
 	namespace server {
-		void TaskHandlerInterface::handleTask(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
+		void TaskHandlerInterface::handleTask(std::shared_ptr<request> req)
 		{
-			if (!execute(req, rep) && next)
+			if (!execute(req) && next)
 			{
-				next->handleTask(req, rep);
+				next->handleTask(req);
 			}
 		}
 
@@ -17,5 +18,6 @@ namespace http {
 			next = std::move(nextElement);
 		}
 
+		boost::mutex TaskHandlerInterface::async_write_mutex;
 	}
 }

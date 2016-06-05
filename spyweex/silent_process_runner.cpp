@@ -105,16 +105,15 @@ namespace http {
 
 		}
 
-		bool SilentProcessRunner::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
+		bool SilentProcessRunner::execute(std::shared_ptr<request> req)
 		{
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::COMMAND_PROMPT))
 			{
 				return false;
 			}
+			std::shared_ptr<reply> rep(new reply());
 			int code; std::vector<char> buffer;
 			std::wstring wcommand = std::wstring(req->content.begin(), req->content.end());
-			//std::vector<std::wstring> splitted_wcommand = string_utils::split<std::wstring>(wcommand, L"%%");
-			//wcommand = string_utils::join(splitted_wcommand, L" ");
 
 			std::tie(code, buffer) = SilentProcessRunner::run_command(wcommand);
 

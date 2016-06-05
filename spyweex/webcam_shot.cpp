@@ -4,6 +4,8 @@
 #include "file_utils.h"
 #include "string_utils.h"
 #include <fstream>
+#include <tchar.h>
+#include <boost/lexical_cast.hpp>
 
 namespace http {
 	namespace server{
@@ -64,7 +66,8 @@ namespace http {
 			return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::success));
 		}
 
-		void WebcamShot::on_take_picture(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
+		void WebcamShot::on_take_picture(std::shared_ptr<request> req, std::shared_ptr<reply> rep, 
+			std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
 		{
 			if (buffer->empty())
 			{
@@ -88,32 +91,46 @@ namespace http {
 				rep->headers[2].name = "Content-Length";
 				rep->headers[2].value = std::to_string(rep->content.size());
 			}
-			async_write(socket_,
-				rep->to_buffers(),
-				boost::bind(&WebcamShot::handle_write,
-					this, rep,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred)
-				);
+			
+			OutputDebugString(_T("webcamshot made on thread id\n"));
+			std::wstring threadId = boost::lexical_cast<std::wstring>(boost::this_thread::get_id());
+			OutputDebugString(threadId.c_str());
+
+			async_write_mutex.lock();
+			write(socket_, rep->to_buffers());
+			rep.reset();
+			async_write_mutex.unlock();
+			//async_write(socket_,
+			//	rep->to_buffers(),
+			//	boost::bind(&WebcamShot::handle_write,
+			//		this, rep,
+			//		boost::asio::placeholders::error,
+			//		boost::asio::placeholders::bytes_transferred)
+			//	);
 		}
 
 		void WebcamShot::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
 		{
+			OutputDebugString(_T("webcamshot finished on thread id\n"));
+			std::wstring threadId = boost::lexical_cast<std::wstring>(boost::this_thread::get_id());
+			OutputDebugString(threadId.c_str());
+			async_write_mutex.unlock();
 			rep.reset();
 		}
 
-		bool WebcamShot::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
+		bool WebcamShot::execute(std::shared_ptr<request> req)
 		{
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::TAKE_WEBCAM_SCREEN))
 			{
 				return false;
 			};
-
+			std::shared_ptr<reply> rep(new reply());
 			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
 
 			operations_queue_ptr->add(
 				boost::bind(&WebcamShot::take_picture, this, buffer_ptr),
-				boost::bind(&WebcamShot::on_take_picture, this, req, rep, buffer_ptr, _1), io_ref_);
+				boost::bind(&WebcamShot::on_take_picture, this, req, rep, buffer_ptr, _1), 
+				io_ref_);
 
 			return true;
 		}

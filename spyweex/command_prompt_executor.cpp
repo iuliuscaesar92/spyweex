@@ -164,6 +164,7 @@ namespace http {
 				};
 			}
 
+			async_write_mutex.lock();
 			async_write(socket_,
 				rep->to_buffers(),
 				boost::bind(&CommandPromptExecutor::handle_write,
@@ -175,15 +176,17 @@ namespace http {
 
 		void CommandPromptExecutor::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
 		{
+			async_write_mutex.unlock();
 			rep.reset();
 		}
 
-		bool CommandPromptExecutor::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
+		bool CommandPromptExecutor::execute(std::shared_ptr<request> req)
 		{
 			if(req->action_type.compare(wxhtpconstants::ACTION_TYPE::COMMAND_PROMPT))
 			{
 				return false;
 			}
+			std::shared_ptr<reply> rep(new reply());
 			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
 
 			std::string command = std::string(req->content.begin(), req->content.end());

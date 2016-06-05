@@ -81,7 +81,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	std::string ip = "192.168.1.7";
 	std::string port = "56432";
 	http::server::server s(ip, port);
-	boost::thread t(boost::bind(&http::server::server::run, &s));
+	//boost::thread t(boost::bind(&http::server::server::run, &s));
+	boost::thread_group worker_threads;
+	for (int i = 0; i < 5; i++)
+		worker_threads.create_thread(boost::bind(&http::server::server::run, &s));
 
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SPYWEEX));
 	MSG msg;
@@ -95,7 +98,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			DispatchMessage(&msg);
 		}
 	}
-	t.join();
+	worker_threads.join_all();
+	//t.join();
 	return (int)msg.wParam;
 }
 

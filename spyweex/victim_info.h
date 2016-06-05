@@ -37,20 +37,22 @@ namespace http {
 
 					wchar_t* GetWideCharIp()
 					{
-						char* ipAddress = new char[16];
-						memset(ipAddress, 0, 16);
-						char* char_digit = new char[4];
-						itoa(b1, char_digit, 10);
-						strcat(ipAddress, char_digit);
-						strcat(ipAddress, ".");
-						itoa(b2, char_digit, 10);
-						strcat(ipAddress, char_digit);
-						strcat(ipAddress, ".");
-						itoa(b3, char_digit, 10);
-						strcat(ipAddress, char_digit);
-						strcat(ipAddress, ".");
-						itoa(b4, char_digit, 10);
-						strcat(ipAddress, char_digit);
+						#define IP_SIZE 16
+						#define DIGIT_SIZE 4
+						char* ipAddress = new char[IP_SIZE];
+						memset(ipAddress, 0, IP_SIZE);
+						char* char_digit = new char[DIGIT_SIZE];
+						_itoa_s(b1, char_digit, DIGIT_SIZE, 10);
+						strcat_s(ipAddress, IP_SIZE * sizeof(char), char_digit);
+						strcat_s(ipAddress, IP_SIZE * sizeof(char), ".");
+						_itoa_s(b2, char_digit, DIGIT_SIZE, 10);
+						strcat_s(ipAddress, IP_SIZE * sizeof(char), char_digit);
+						strcat_s(ipAddress, IP_SIZE * sizeof(char), ".");
+						_itoa_s(b3, char_digit, DIGIT_SIZE, 10);
+						strcat_s(ipAddress, IP_SIZE * sizeof(char), char_digit);
+						strcat_s(ipAddress, IP_SIZE * sizeof(char), ".");
+						_itoa_s(b4, char_digit, DIGIT_SIZE, 10);
+						strcat_s(ipAddress, IP_SIZE * sizeof(char), char_digit);
 
 						size_t size = mbstowcs(NULL, ipAddress, 0);
 						wchar_t* ipAddressW = new wchar_t[size + 1];
@@ -78,7 +80,7 @@ namespace http {
 
 				void handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes);
 
-				bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) override;
+				bool execute(std::shared_ptr<request> req) override;
 		};
 	}
 }

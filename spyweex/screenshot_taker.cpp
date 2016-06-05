@@ -7,6 +7,8 @@
 #include "string_utils.h"
 #include "reply.hpp"
 #include "app_error_category.hpp"
+#include <tchar.h>
+#include <boost/lexical_cast.hpp>
 
 namespace http {
 	namespace server {
@@ -135,7 +137,6 @@ namespace http {
 
 		void ScreenshotTaker::on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
 		{
-			//if (buffer->empty() || e.value() != boost::system::errc::success)
 			if (buffer->empty())
 			{
 				std::shared_ptr<reply> temp_rep = reply::stock_reply(reply::internal_server_error);
@@ -161,100 +162,40 @@ namespace http {
 				rep->headers[2].value = std::to_string(rep->content.size());
 			}
 
-			async_write(socket_,
-				rep->to_buffers(),
-				boost::bind(&ScreenshotTaker::handle_write, 
-					this, rep,
-					boost::asio::placeholders::error, 
-					boost::asio::placeholders::bytes_transferred)
-				);
-		}
-		
-		void ScreenshotTaker::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
-		{
-			rep.reset();
-		}
+			OutputDebugString(_T("screenshot made on thread id\n"));
+			std::wstring threadId = boost::lexical_cast<std::wstring>(boost::this_thread::get_id());
+			OutputDebugString(threadId.c_str());
 
-		bool ScreenshotTaker::execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep)
+			async_write_mutex.lock();
+			write(socket_, rep->to_buffers());
+			async_write_mutex.unlock();
+			rep.reset();
+		}		
+
+		bool ScreenshotTaker::execute(std::shared_ptr<request> req)
 		{
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::TAKE_DESKTOP_SCREEN))
 			{
 				return false;
 			}
-
+			std::shared_ptr<reply> rep(new reply());
 			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
 			operations_queue_ptr->add(
 				boost::bind(&ScreenshotTaker::take_screenshot, this, buffer_ptr, 100),
-				boost::bind(&ScreenshotTaker::on_take_screenshot, this, req, rep, buffer_ptr, _1), io_ref_);
+				boost::bind(&ScreenshotTaker::on_take_screenshot, this, req, rep, buffer_ptr, _1), 
+				io_ref_);
+
+			// to be deleted.
+			//boost::asio::deadline_timer dt(io_ref_);
+			//dt.expires_from_now(boost::posix_time::seconds(10));
+			//dt.wait();
+			//take_screenshot(buffer_ptr, 100);
+			//boost::system::error_code ec;
+			//on_take_screenshot(req, rep, buffer_ptr, ec);
+			//to be deleted
 
 			return true;
 		}
 
-		//#pragma region SaveScreenshot
-		//int ScreenshotTaker::SaveScreenshot(string filename, ULONG uQuality) // by Napalm
-		//{
-		//	ULONG_PTR gdiplusToken;
-		//	GdiplusStartupInput gdiplusStartupInput;
-		//	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-		//	HWND hMyWnd = GetDesktopWindow();
-		//	RECT r;
-		//	int w, h;
-		//	HDC dc, hdcCapture;
-		//	int nBPP, nCapture, iRes;
-		//	LPBYTE lpCapture;
-		//	CLSID imageCLSID;
-		//	Bitmap *pScreenShot;
-
-		//	// get the area of my application's window     
-		//	GetWindowRect(hMyWnd, &r);
-		//	dc = GetWindowDC(hMyWnd);   // GetDC(hMyWnd) ;
-		//	w = r.right - r.left;
-		//	h = r.bottom - r.top;
-		//	nBPP = GetDeviceCaps(dc, BITSPIXEL);
-		//	hdcCapture = CreateCompatibleDC(dc);
-
-		//	// create the buffer for the screenshot
-		//	BITMAPINFO bmiCapture = { sizeof(BITMAPINFOHEADER), w, -h, 1, nBPP, BI_RGB, 0, 0, 0, 0, 0, };
-
-		//	// create a container and take the screenshot
-		//	HBITMAP hbmCapture = CreateDIBSection(dc, &bmiCapture, DIB_PAL_COLORS, (LPVOID *)&lpCapture, NULL, 0);
-
-		//	// failed to take it
-		//	if (!hbmCapture) {
-		//		DeleteDC(hdcCapture);
-		//		DeleteDC(dc);
-		//		GdiplusShutdown(gdiplusToken);
-		//		printf("failed to take the screenshot. err: %d\n", GetLastError());
-		//		return 0;
-		//	}
-
-		//	// copy the screenshot buffer
-		//	nCapture = SaveDC(hdcCapture);
-		//	SelectObject(hdcCapture, hbmCapture);
-		//	BitBlt(hdcCapture, 0, 0, w, h, dc, 0, 0, SRCCOPY);
-		//	RestoreDC(hdcCapture, nCapture);
-		//	DeleteDC(hdcCapture);
-		//	DeleteDC(dc);
-
-		//	// save the buffer to a file   
-		//	pScreenShot = new Bitmap(hbmCapture, (HPALETTE)NULL);
-		//	EncoderParameters encoderParams;
-		//	encoderParams.Count = 1;
-		//	encoderParams.Parameter[0].NumberOfValues = 1;
-		//	encoderParams.Parameter[0].Guid = EncoderQuality;
-		//	encoderParams.Parameter[0].Type = EncoderParameterValueTypeLong;
-		//	encoderParams.Parameter[0].Value = &uQuality;
-		//	GetEncoderClsid(L"image/jpeg", &imageCLSID);
-
-		//	wchar_t *lpszFilename = new wchar_t[filename.length() + 1];
-		//	mbstowcs(lpszFilename, filename.c_str(), filename.length() + 1);
-
-		//	iRes = (pScreenShot->Save(lpszFilename, &imageCLSID, &encoderParams) == Ok);
-		//	delete pScreenShot;
-		//	DeleteObject(hbmCapture);
-		//	GdiplusShutdown(gdiplusToken);
-		//	return iRes;
-		//}
-		//#pragma endregion Don't need it. Hold it as reference
 	}
 }

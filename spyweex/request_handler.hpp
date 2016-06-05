@@ -36,8 +36,7 @@ public:
   explicit request_handler(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref);
 
   /// Handle a request and produce a reply.
-  //void handle_request(const request& req, reply& rep);
-  void handle_request(std::shared_ptr<request> req, std::shared_ptr<reply> rep) const;
+  void handle_request(std::shared_ptr<request> req) const;
 
 private:
 

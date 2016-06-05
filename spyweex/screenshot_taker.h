@@ -41,17 +41,11 @@ namespace http {
 
 			static int GetEncoderClsid(WCHAR *format, CLSID *pClsid);
 
-			//static int SaveScreenshot(string filename, ULONG uQuality); // by Napalm
-
-			//static std::tuple<int, std::vector<char>> take_screenshot(ULONG uQuality);
-
 			boost::system::error_code ScreenshotTaker::take_screenshot(std::shared_ptr<vector<char>> buffer, ULONG uQuality);
 
 			void on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e);
 
-			void handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes);
-
-			bool execute(std::shared_ptr<request> req, std::shared_ptr<reply> rep) override;
+			bool execute(std::shared_ptr<request> req) override;
 		};
 	}
 }
