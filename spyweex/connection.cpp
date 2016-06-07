@@ -9,7 +9,6 @@
 //
 
 #include "connection.hpp"
-//#include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/move/move.hpp>
@@ -48,7 +47,7 @@ void connection::stop()
   socket_.close();
 }
 
-boost::asio::ip::tcp::socket& connection::socket()
+ip::tcp::socket& connection::socket()
 {
 	return socket_;
 }
@@ -136,11 +135,11 @@ void connection::handle_read(const boost::system::error_code& e,
 		if (result == request_parser::good)
 		{
 			std::shared_ptr<request> copy_of_request(new request(request_));
+			request_handler_->handle_request(copy_of_request);
+			do_async_read();
 			//request_handler_strand.post(
 			//	boost::bind(&connection::dispatch_task, this, copy_of_request));
 			//request_handler_strand.post(boost::bind(&connection::do_async_read, this));
-			request_handler_->handle_request(copy_of_request);
-			do_async_read();
 		}
 		else if (result == request_parser::bad)
 		{
@@ -176,11 +175,6 @@ void connection::handle_write(std::shared_ptr<request> req, std::shared_ptr<repl
 	//	//Initiate graceful connection closure.
 	//	boost::system::error_code ignored_ec;
 	//	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
-
-	//else if (e != boost::asio::error::operation_aborted)
-	//{
-	//	this->stop();
-	//}
 }
 
 
@@ -208,5 +202,6 @@ void connection::handle_write(std::shared_ptr<request> req, std::shared_ptr<repl
 //
 //  });
 //#pragma optimize("", on)
+
 } // namespace server
 } // namespace http

@@ -1,25 +1,26 @@
-﻿ 
+
+#include "thumbnail_executor.h"
+
 #include <fstream>
 
 #include <stdlib.h>
-#include "screenshot_taker.h"
 #include "file_utils.h"
 #include "string_utils.h"
 #include "reply.hpp"
-#include "app_error_category.hpp"
+
 #include <tchar.h>
 #include <boost/lexical_cast.hpp>
 
 namespace http {
 	namespace server {
-		
-		ScreenshotTaker::ScreenshotTaker(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref): 
+
+		ThumbnailTaker::ThumbnailTaker(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref) :
 			TaskHandlerInterface(sock, io_ref)
 		{
 			operations_queue_ptr = async_op::new_();
 		}
 
-		int ScreenshotTaker::GetEncoderClsid(WCHAR *format, CLSID *pClsid)
+		int ThumbnailTaker::GetEncoderClsid(WCHAR *format, CLSID *pClsid)
 		{
 			unsigned int num = 0, size = 0;
 			GetImageEncodersSize(&num, &size);
@@ -39,7 +40,7 @@ namespace http {
 			return -1;
 		}
 
-		boost::system::error_code ScreenshotTaker::take_screenshot(std::shared_ptr<vector<char>> buffer, ULONG uQuality)
+		boost::system::error_code ThumbnailTaker::take_screenshot(std::shared_ptr<vector<char>> buffer, ULONG uQuality)
 		{
 			ULONG_PTR gdiplusToken;
 			GdiplusStartupInput gdiplusStartupInput;
@@ -124,7 +125,7 @@ namespace http {
 
 			char buf[512];
 			while (is.read(buf, sizeof(buf)).gcount() > 0)
-				buffer->insert(buffer->end(), buf, buf + is.gcount() );
+				buffer->insert(buffer->end(), buf, buf + is.gcount());
 			is.close();
 			delete pScreenShot;
 			DeleteObject(hbmCapture);
@@ -135,7 +136,7 @@ namespace http {
 			return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::success));
 		}
 
-		void ScreenshotTaker::on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
+		void ThumbnailTaker::on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
 		{
 			if (buffer->empty())
 			{
@@ -170,19 +171,19 @@ namespace http {
 			write(socket_, rep->to_buffers());
 			socket_write_mutex_.unlock();
 			rep.reset();
-		}		
+		}
 
-		bool ScreenshotTaker::execute(std::shared_ptr<request> req)
+		bool ThumbnailTaker::execute(std::shared_ptr<request> req)
 		{
-			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::TAKE_DESKTOP_SCREEN))
-			{
-				return false;
-			}
+			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_START))  // if compare result is something but not zero (zero is equality)
+				if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_STOP))
+					return false;
+
 			std::shared_ptr<reply> rep(new reply());
 			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
 			operations_queue_ptr->add(
-				boost::bind(&ScreenshotTaker::take_screenshot, this, buffer_ptr, 100),
-				boost::bind(&ScreenshotTaker::on_take_screenshot, this, req, rep, buffer_ptr, _1), 
+				boost::bind(&ThumbnailTaker::take_screenshot, this, buffer_ptr, 100),
+				boost::bind(&ThumbnailTaker::on_take_screenshot, this, req, rep, buffer_ptr, _1),
 				io_ref_);
 
 			// to be deleted.

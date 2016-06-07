@@ -18,6 +18,6 @@ namespace http {
 			next = std::move(nextElement);
 		}
 
-		boost::mutex TaskHandlerInterface::async_write_mutex;
+		boost::mutex TaskHandlerInterface::socket_write_mutex_;
 	}
 }

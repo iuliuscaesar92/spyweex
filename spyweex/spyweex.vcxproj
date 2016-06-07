@@ -189,6 +189,7 @@
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="task_handler_interface.h" />
+    <ClInclude Include="thumbnail_executor.h" />
     <ClInclude Include="utils.hpp" />
     <ClInclude Include="victim_info.h" />
     <ClInclude Include="webcam_shot.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="silent_process_runner.cpp" />
     <ClCompile Include="spyweex.cpp" />
     <ClCompile Include="task_handler_interface.cpp" />
+    <ClCompile Include="thumbnail_executor.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="victim_info.cpp" />
     <ClCompile Include="webcam_shot.cpp" />

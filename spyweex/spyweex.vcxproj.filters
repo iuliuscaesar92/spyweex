@@ -93,6 +93,9 @@
     <ClInclude Include="utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="thumbnail_executor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="spyweex.cpp">
@@ -147,6 +150,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="thumbnail_executor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

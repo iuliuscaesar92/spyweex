@@ -31,7 +31,7 @@ namespace http {
 
 			boost::shared_ptr<async_op> operations_queue_ptr;
 
-			static boost::mutex async_write_mutex;
+			static boost::mutex socket_write_mutex_;
 		};
 	}
 }

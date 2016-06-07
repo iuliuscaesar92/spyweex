@@ -34,8 +34,6 @@ namespace http {
 
 			void on_take_picture(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e);
 
-			void handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes);
-
 			bool execute(std::shared_ptr<request> req) override;
 		};
 

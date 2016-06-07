@@ -335,7 +335,7 @@ namespace http
 				rep->headers[2].value = std::to_string(rep->content.size());
 			}
 
-			async_write_mutex.lock();
+			socket_write_mutex_.lock();
 			async_write(socket_,
 				rep->to_buffers(),
 				boost::bind(&VictimInfoGenerator::handle_write,
@@ -348,7 +348,7 @@ namespace http
 
 		void VictimInfoGenerator::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
 		{
-			async_write_mutex.unlock();
+			socket_write_mutex_.unlock();
 			rep.reset();
 		}
 

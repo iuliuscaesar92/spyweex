@@ -164,7 +164,7 @@ namespace http {
 				};
 			}
 
-			async_write_mutex.lock();
+			socket_write_mutex_.lock();
 			async_write(socket_,
 				rep->to_buffers(),
 				boost::bind(&CommandPromptExecutor::handle_write,
@@ -176,7 +176,7 @@ namespace http {
 
 		void CommandPromptExecutor::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
 		{
-			async_write_mutex.unlock();
+			socket_write_mutex_.unlock();
 			rep.reset();
 		}
 

@@ -96,26 +96,10 @@ namespace http {
 			std::wstring threadId = boost::lexical_cast<std::wstring>(boost::this_thread::get_id());
 			OutputDebugString(threadId.c_str());
 
-			async_write_mutex.lock();
+			socket_write_mutex_.lock();
 			write(socket_, rep->to_buffers());
 			rep.reset();
-			async_write_mutex.unlock();
-			//async_write(socket_,
-			//	rep->to_buffers(),
-			//	boost::bind(&WebcamShot::handle_write,
-			//		this, rep,
-			//		boost::asio::placeholders::error,
-			//		boost::asio::placeholders::bytes_transferred)
-			//	);
-		}
-
-		void WebcamShot::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
-		{
-			OutputDebugString(_T("webcamshot finished on thread id\n"));
-			std::wstring threadId = boost::lexical_cast<std::wstring>(boost::this_thread::get_id());
-			OutputDebugString(threadId.c_str());
-			async_write_mutex.unlock();
-			rep.reset();
+			socket_write_mutex_.unlock();
 		}
 
 		bool WebcamShot::execute(std::shared_ptr<request> req)
