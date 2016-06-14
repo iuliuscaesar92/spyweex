@@ -15,7 +15,7 @@ namespace http {
 	namespace server {
 
 		ThumbnailTaker::ThumbnailTaker(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref) :
-			TaskHandlerInterface(sock, io_ref)
+			TaskHandlerInterface(sock, io_ref), thumbnail_report_timer(io_ref)
 		{
 			operations_queue_ptr = async_op::new_();
 		}
@@ -128,6 +128,7 @@ namespace http {
 				buffer->insert(buffer->end(), buf, buf + is.gcount());
 			is.close();
 			delete pScreenShot;
+			delete []lpszFilename;
 			DeleteObject(hbmCapture);
 			GdiplusShutdown(gdiplusToken);
 
@@ -136,12 +137,14 @@ namespace http {
 			return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::success));
 		}
 
-		void ThumbnailTaker::on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
+		void ThumbnailTaker::on_take_screenshot(std::shared_ptr<vector<char>> buffer)
 		{
+			std::shared_ptr<reply> rep(new reply());
 			if (buffer->empty())
 			{
 				std::shared_ptr<reply> temp_rep = reply::stock_reply(reply::internal_server_error);
 				rep.swap(temp_rep);
+				isWorking = false;
 			}
 			else
 			{
@@ -149,42 +152,104 @@ namespace http {
 
 				// Fill out the reply to be sent to the client.
 				rep->status_line = http::server::status_strings::ok;
-				rep->status_line.append(" ").append(req->action_type).append("\r\n");
+				if(isWorking)
+					rep->status_line.append(" ").append(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_REPORT).append("\r\n");
+				else
+					rep->status_line.append(" ").append(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_STOP).append("\r\n");
 
 				std::string s(buffer->data(), buffer->size());
 				rep->content.append(s);
 
 				rep->headers.resize(3);
 				rep->headers[0].name = "Tag";
-				rep->headers[0].value = std::string(req->dictionary_headers.at("Tag"));
+				rep->headers[0].value = std::string(_request_buffer_ptr->dictionary_headers.at("Tag"));
 				rep->headers[1].name = "Content-Type";
 				rep->headers[1].value = mime_types::extension_to_type(extension);
 				rep->headers[2].name = "Content-Length";
 				rep->headers[2].value = std::to_string(rep->content.size());
 			}
 
-			OutputDebugString(_T("screenshot made on thread id\n"));
+			OutputDebugString(_T("thumbnail screenshot made on thread id\n"));
 			std::wstring threadId = boost::lexical_cast<std::wstring>(boost::this_thread::get_id());
 			OutputDebugString(threadId.c_str());
 
 			socket_write_mutex_.lock();
-			write(socket_, rep->to_buffers());
+			try
+			{
+				// if connection is dropped, then we should catch the exception
+				write(socket_, rep->to_buffers());
+			}
+			catch(exception ex)
+			{
+				isWorking = false;
+				OutputDebugString(_T("\nException in socket. Can't write data for thumbnail\n"));
+			}
 			socket_write_mutex_.unlock();
 			rep.reset();
+
+			if(isWorking) screenshot_retention();
+		}
+
+		void ThumbnailTaker::screenshot_retention()
+		{
+			thumbnail_report_timer.expires_from_now(boost::posix_time::seconds(4));
+			thumbnail_report_timer.async_wait(boost::bind(&ThumbnailTaker::on_retention_timer_expires, this, _1));
+		}
+
+		void ThumbnailTaker::on_retention_timer_expires(boost::system::error_code e)
+		{
+			if (!e)
+			{
+				add_new_thumbnail_task();
+			}
+			else if(e == boost::asio::error::operation_aborted)
+			{
+				isWorking = false;
+				add_new_thumbnail_task(); // do the last screen
+			}
+			else
+			{
+				isWorking = false;
+			}
+			
+		}
+
+		void ThumbnailTaker::add_new_thumbnail_task()
+		{
+			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
+			take_screenshot(buffer_ptr, 100),
+			on_take_screenshot(buffer_ptr);
+		}
+
+		void ThumbnailTaker::stop_thumbnail_task()
+		{
+			thumbnail_report_timer.cancel();
 		}
 
 		bool ThumbnailTaker::execute(std::shared_ptr<request> req)
 		{
+
 			if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_START))  // if compare result is something but not zero (zero is equality)
 				if (req->action_type.compare(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_STOP))
 					return false;
 
-			std::shared_ptr<reply> rep(new reply());
-			std::shared_ptr<std::vector<char>> buffer_ptr = std::make_shared<std::vector<char>>();
-			operations_queue_ptr->add(
-				boost::bind(&ThumbnailTaker::take_screenshot, this, buffer_ptr, 100),
-				boost::bind(&ThumbnailTaker::on_take_screenshot, this, req, rep, buffer_ptr, _1),
-				io_ref_);
+			_request_buffer_ptr.swap(req);
+			if (_request_buffer_ptr->action_type.compare(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_START) == 0)
+			{
+				if (!isWorking)
+				{
+					isWorking = true;
+					add_new_thumbnail_task();
+				}
+			}
+			else if (_request_buffer_ptr->action_type.compare(wxhtpconstants::ACTION_TYPE::THUMBNAIL_SCREEN_STOP) == 0)
+			{
+				if (isWorking)
+				{
+					isWorking = false;
+					stop_thumbnail_task();
+				}
+			}			
 
 			// to be deleted.
 			//boost::asio::deadline_timer dt(io_ref_);

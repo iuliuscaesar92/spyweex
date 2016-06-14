@@ -33,22 +33,32 @@ namespace http
 	{
 		class ThumbnailTaker: public TaskHandlerInterface, private boost::noncopyable
 		{
-			explicit ThumbnailTaker(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref);
+			public:
+				explicit ThumbnailTaker(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref);
 
-			static int GetEncoderClsid(WCHAR *format, CLSID *pClsid);
+				static int GetEncoderClsid(WCHAR *format, CLSID *pClsid);
 
-			boost::system::error_code ThumbnailTaker::take_screenshot(std::shared_ptr<std::vector<char>> buffer, ULONG uQuality);
+				boost::system::error_code ThumbnailTaker::take_screenshot(std::shared_ptr<std::vector<char>> buffer, ULONG uQuality);
 
-			void on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<std::vector<char>> buffer, boost::system::error_code& e);
+				void on_take_screenshot(std::shared_ptr<std::vector<char>> buffer);
 
-			bool execute(std::shared_ptr<request> req) override;
+				void screenshot_retention();
+
+				void on_retention_timer_expires(boost::system::error_code e);
+
+				void add_new_thumbnail_task();
+
+				void stop_thumbnail_task();
+
+				bool execute(std::shared_ptr<request> req) override;
 
 			private:
 
-				//deadline_timer thumbnail_report_timer;
+				bool isWorking = false;
 
-				//std::shared_ptr<reply>	 _reply_buffer_ptr;
-				//std::shared_ptr<request> _request_buffer_ptr;
+				deadline_timer thumbnail_report_timer;
+
+				std::shared_ptr<request> _request_buffer_ptr;
 		};
 	}
 }

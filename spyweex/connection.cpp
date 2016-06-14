@@ -161,7 +161,7 @@ void connection::handle_read(const boost::system::error_code& e,
 					boost::asio::placeholders::bytes_transferred));
 		}
 	}
-	else if (e == boost::asio::error::eof)
+	else if (e == boost::asio::error::eof || e == boost::asio::error::connection_aborted || e == boost::asio::error::connection_reset)
 	{
 		connection_dropped();
 	}

@@ -127,6 +127,7 @@ namespace http {
 				buffer->insert(buffer->end(), buf, buf + is.gcount() );
 			is.close();
 			delete pScreenShot;
+			delete []lpszFilename;
 			DeleteObject(hbmCapture);
 			GdiplusShutdown(gdiplusToken);
 
