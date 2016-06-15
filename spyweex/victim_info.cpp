@@ -120,7 +120,7 @@ namespace http
 			const long long millis = uptime.count();
 			std::wstring millis_wide = std::to_wstring(millis);
 			wchar_t* result = new wchar_t[100];
-			wcscpy_s(result, wcslen(result), millis_wide.c_str());
+			wcscpy_s(result, wcslen(millis_wide.c_str()) + sizeof(wchar_t), millis_wide.c_str());
 
 			//_ltow(millis, buff, 10);
 			//wchar_t *result = new wchar_t[wcslen(buff) + 1];
@@ -336,19 +336,22 @@ namespace http
 			}
 
 			socket_write_mutex_.lock();
-			async_write(socket_,
-				rep->to_buffers(),
-				boost::bind(&VictimInfoGenerator::handle_write,
-					this, rep,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred)
-				);
+			write(socket_, rep->to_buffers());
+			rep.reset();
+			socket_write_mutex_.unlock();
+
+			//async_write(socket_,
+			//	rep->to_buffers(),
+			//	boost::bind(&VictimInfoGenerator::handle_write,
+			//		this, rep,
+			//		boost::asio::placeholders::error,
+			//		boost::asio::placeholders::bytes_transferred)
+			//	);
 
 		}
 
 		void VictimInfoGenerator::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
 		{
-			socket_write_mutex_.unlock();
 			rep.reset();
 		}
 

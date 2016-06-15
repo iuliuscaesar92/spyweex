@@ -39,7 +39,7 @@ namespace http {
 
 				void on_keylog_report_timer_elapsed(const boost::system::error_code& error);
 
-				void handle_async_write_report(const boost::system::error_code& error, std::size_t bytes);
+				void handle_write_report(const boost::system::error_code& error, std::size_t bytes);
 
 				bool execute(std::shared_ptr<request> req) override;
 

