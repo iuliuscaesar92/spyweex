@@ -3,24 +3,35 @@
 #ifndef WEBCAM_SHOT_HPP
 #define WEBCAM_SHOT_HPP
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-//
-//#pragma comment(lib, "vfw32.lib")
-//#pragma comment( lib, "comctl32.lib" )
-
-
-#include <iostream>
 #include <string>
+#include <stdio.h>
+#include <vector>
+#include <fstream>
 
 #include "task_handler_interface.h"
 #include "request.hpp"
 #include "reply.hpp"
 #include "mime_types.hpp"
 
-using namespace cv;
+#include <windows.h>
+#include "escapi_dll.h"
+#pragma comment(lib, "Shlwapi.lib")
+
+#ifndef min
+#define min(x,y) ((x) < (y) ? (x) : (y))
+#endif
+#ifndef max
+#define max(x,y) ((x) > (y) ? (x) : (y))
+#endif;
+#include <Unknwn.h>  
+#include <gdiplus.h>
+#undef min
+#undef max
+
+#pragma comment(lib, "gdiplus.lib")
+
 using namespace std;
+using namespace Gdiplus;
 
 namespace http {
 	namespace server {
@@ -29,6 +40,10 @@ namespace http {
 		{
 		public:
 			explicit WebcamShot(boost::asio::ip::tcp::socket& sock, boost::asio::io_service& io_ref);
+
+			int GetEncoderClsid(WCHAR *format, CLSID *pClsid);
+
+			int setupESCAPI();
 
 			boost::system::error_code take_picture(std::shared_ptr<vector<char>> buffer);
 
