@@ -2,6 +2,7 @@
 #define _WIN32_WINNT 0x0603
 #include <boost/locale.hpp>
 #include "victim_info.h"
+#include "socket_utils.hpp"
 using namespace boost::locale::conv;
 
 namespace http
@@ -336,8 +337,11 @@ namespace http
 			}
 
 			socket_write_mutex_.lock();
+
 			write(socket_, rep->to_buffers());
+			socket_utils::write_delimiter(socket_);
 			rep.reset();
+
 			socket_write_mutex_.unlock();
 
 			//async_write(socket_,

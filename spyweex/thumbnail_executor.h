@@ -24,7 +24,7 @@
 #undef min
 #undef max
 
-#pragma comment(lib, "gdiplus.lib")
+//#pragma comment(lib, "gdiplus.lib")
 using namespace std;
 using namespace Gdiplus;
 namespace http

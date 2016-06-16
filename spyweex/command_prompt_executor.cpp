@@ -12,6 +12,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <comdef.h>
+#include "socket_utils.hpp"
 
 namespace http {
 	namespace server {
@@ -165,9 +166,13 @@ namespace http {
 			}
 
 			socket_write_mutex_.lock();
+
 			write(socket_, rep->to_buffers());
+			socket_utils::write_delimiter(socket_);
 			rep.reset();
+
 			socket_write_mutex_.unlock();
+
 			//async_write(socket_,
 			//	rep->to_buffers(),
 			//	boost::bind(&CommandPromptExecutor::handle_write,

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <tchar.h>
 #include <boost/lexical_cast.hpp>
+#include "socket_utils.hpp"
 
 namespace http {
 	namespace server{
@@ -194,6 +195,7 @@ namespace http {
 
 			socket_write_mutex_.lock();
 			write(socket_, rep->to_buffers());
+			socket_utils::write_delimiter(socket_);
 			rep.reset();
 			socket_write_mutex_.unlock();
 		}

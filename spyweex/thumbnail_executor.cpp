@@ -10,6 +10,7 @@
 
 #include <tchar.h>
 #include <boost/lexical_cast.hpp>
+#include "socket_utils.hpp"
 
 namespace http {
 	namespace server {
@@ -116,8 +117,9 @@ namespace http {
 			std::ifstream is(lpszFilename, std::ios::in | std::ios::binary);
 			if (!is)
 			{
-				DeleteDC(hdcCapture);
-				DeleteDC(dc);
+				//DeleteDC(hdcCapture);
+				//DeleteDC(dc);
+				DeleteObject(hbmCapture);
 				GdiplusShutdown(gdiplusToken);
 				printf("failed to open a stream for screenshoot. err: %d\n", GetLastError());
 				return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::io_error));
@@ -131,7 +133,9 @@ namespace http {
 			delete []lpszFilename;
 			DeleteObject(hbmCapture);
 			GdiplusShutdown(gdiplusToken);
-
+			// ---closing hMyWnd
+			// CloseHandle(hMyWnd);
+			// ---closing hMyWnd
 			DeleteFile(lpszFilename);
 
 			return boost::system::error_code(boost::system::errc::make_error_code(boost::system::errc::success));
@@ -139,6 +143,7 @@ namespace http {
 
 		void ThumbnailTaker::on_take_screenshot(std::shared_ptr<vector<char>> buffer)
 		{
+			socket_write_mutex_.lock();
 			std::shared_ptr<reply> rep(new reply());
 			if (buffer->empty())
 			{
@@ -173,26 +178,27 @@ namespace http {
 			std::wstring threadId = boost::lexical_cast<std::wstring>(boost::this_thread::get_id());
 			OutputDebugString(threadId.c_str());
 
-			socket_write_mutex_.lock();
+
 			try
 			{
 				// if connection is dropped, then we should catch the exception
-				write(socket_, rep->to_buffers());
+				write(socket_, rep->to_buffers(), boost::asio::transfer_all());
+				socket_utils::write_delimiter(socket_);
 			}
 			catch(exception ex)
 			{
 				isWorking = false;
 				OutputDebugString(_T("\nException in socket. Can't write data for thumbnail\n"));
 			}
-			socket_write_mutex_.unlock();
 			rep.reset();
+			socket_write_mutex_.unlock();
 
 			if(isWorking) screenshot_retention();
 		}
 
 		void ThumbnailTaker::screenshot_retention()
 		{
-			thumbnail_report_timer.expires_from_now(boost::posix_time::seconds(4));
+			thumbnail_report_timer.expires_from_now(boost::posix_time::seconds(10));
 			thumbnail_report_timer.async_wait(boost::bind(&ThumbnailTaker::on_retention_timer_expires, this, _1));
 		}
 

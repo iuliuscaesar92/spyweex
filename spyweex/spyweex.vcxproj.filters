@@ -96,6 +96,9 @@
     <ClInclude Include="thumbnail_executor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="socket_utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="spyweex.cpp">

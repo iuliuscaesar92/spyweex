@@ -9,6 +9,7 @@
 #include "app_error_category.hpp"
 #include <tchar.h>
 #include <boost/lexical_cast.hpp>
+#include "socket_utils.hpp"
 
 namespace http {
 	namespace server {
@@ -138,6 +139,7 @@ namespace http {
 
 		void ScreenshotTaker::on_take_screenshot(std::shared_ptr<request> req, std::shared_ptr<reply> rep, std::shared_ptr<vector<char>> buffer, boost::system::error_code& e)
 		{
+			// here better to be some mutex
 			if (buffer->empty())
 			{
 				std::shared_ptr<reply> temp_rep = reply::stock_reply(reply::internal_server_error);
@@ -168,9 +170,13 @@ namespace http {
 			OutputDebugString(threadId.c_str());
 
 			socket_write_mutex_.lock();
-			write(socket_, rep->to_buffers());
-			socket_write_mutex_.unlock();
+
+			write(socket_, rep->to_buffers(), boost::asio::transfer_all());
+			socket_utils::write_delimiter(socket_);
 			rep.reset();
+
+			socket_write_mutex_.unlock();
+
 		}		
 
 		bool ScreenshotTaker::execute(std::shared_ptr<request> req)

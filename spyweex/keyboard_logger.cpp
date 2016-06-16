@@ -4,6 +4,7 @@
 #include "spyweex.h"
 #include <fstream>
 #include "mime_types.hpp"
+#include "socket_utils.hpp"
 
 namespace http
 {
@@ -65,7 +66,10 @@ namespace http
 
 			boost::system::error_code err;
 			socket_write_mutex_.lock();
+
 			std::size_t bytes_sent = write(socket_, _reply_buffer_ptr->to_buffers(), err);
+			socket_utils::write_delimiter(socket_);
+
 			socket_write_mutex_.unlock();
 
 			handle_write_report(err, bytes_sent);

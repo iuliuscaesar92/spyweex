@@ -186,6 +186,7 @@
     <ClInclude Include="screenshot_taker.h" />
     <ClInclude Include="server.hpp" />
     <ClInclude Include="silent_process_runner.h" />
+    <ClInclude Include="socket_utils.hpp" />
     <ClInclude Include="spyweex.h" />
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="targetver.h" />
