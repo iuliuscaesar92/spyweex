@@ -66,6 +66,11 @@ namespace http
 				return lpszFilename;
 			}
 
+			bool fileExists(const char *fileName)
+			{
+				std::ifstream infile(fileName);
+				return infile.good();
+			}
 
 			//HANDLE hFile = CreateFile(
 			//	lpszFilename,				// lpFileName

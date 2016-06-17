@@ -25,6 +25,7 @@
 #include <iostream>
 #include <fstream>
 #include "utils.hpp"
+#include "string_utils.h"
 
 #define MAX_LOADSTRING 100
 
@@ -77,9 +78,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return FALSE;
 	}
 
-	//std::string ip = "192.168.1.7";
-	std::string ip = "192.168.1.7";
-	std::string port = "56432";
+	std::ifstream cfgFile("C:\\Users\\weex9_000\\Source\\Repos\\spyweex-repo\\Debug\\cfgspx.txt", std::ifstream::in);
+	std::string target_address;
+	//std::getline(cfgFile, target_address);
+
+	if(cfgFile.is_open())
+	{
+		cfgFile >> target_address;
+		cfgFile.close();
+	}
+	std::vector<std::string> ip_port = http::server::string_utils::split(target_address, std::string(":"));
+	std::string ip = ip_port[0];
+	std::string port = ip_port[1];
+
 	http::server::server s(ip, port);
 	//boost::thread t(boost::bind(&http::server::server::run, &s));
 	boost::thread_group worker_threads;

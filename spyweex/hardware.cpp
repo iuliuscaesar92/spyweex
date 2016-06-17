@@ -85,7 +85,6 @@ std::string Hardware::get_timed_report()
 	{
 		json_holder.put(L"end_time", _endTime);
 		json_holder.put(L"active_window", _lastActiveWindow);
-		_lastReport = false;
 	}
 
 	json_holder.put(L"content", _buf);

