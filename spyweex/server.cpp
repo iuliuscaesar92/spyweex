@@ -20,12 +20,10 @@ using boost::asio::ip::tcp;
 namespace http {
 namespace server {
 
-server::server(const std::string& address, const std::string& port)
+server::server()
 		:io_service_(),
 		signals_(io_service_),
-		socket_(io_service_),
-		dest_address(address),
-	    dest_port(atoi(port.c_str()))
+		socket_(io_service_)
 {
   // Register to handle the signals that indicate when the server should exit.
   // It is safe to register for the same signal multiple times in a program,
@@ -39,12 +37,22 @@ server::server(const std::string& address, const std::string& port)
 
   do_await_stop();  
 
-  async_connect();
+  //async_connect();
 }
 
 server::~server()
 {
 
+}
+
+void server::set_ip(const std::string& ip)
+{
+	this->dest_address = ip;
+}
+
+void server::set_port(const std::string& port)
+{
+	this->dest_port = atoi(port.c_str());
 }
 
 void server::async_connect()

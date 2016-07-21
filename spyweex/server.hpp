@@ -26,11 +26,19 @@ class server : private boost::noncopyable
 public:
   /// Construct the server to listen on the specified TCP address and port, and
   /// serve up files from the given directory.
-  explicit server(const std::string& address, const std::string& port);
+  // explicit server(const std::string& address, const std::string& port);
+
+  explicit server();
 
   /// Run the server's io_service loop.
   void run();
   ~server();
+
+  void set_ip(const std::string& ip);
+
+  void set_port(const std::string& port);
+
+  void async_connect();
 
 private:
 
@@ -38,8 +46,6 @@ private:
 
   /// Wait for a request to stop the server.
   void do_await_stop();
-
-  void async_connect();
 
   /// Handle reverse tcp connection
   void handle_reverse_connection(const boost::system::error_code& err);
